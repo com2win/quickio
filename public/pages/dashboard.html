@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Quickio — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--blue:#1A6BFF;--blue-dark:#0D4FCC;--blue-light:#E8F0FF;--ink:#0A0F1E;--ink-soft:#3A4260;--ink-muted:#8892A4;--surface:#F7F9FF;--white:#fff;--border:#E2E8F8;--green:#00C97A;--green-light:#E6FBF2;--orange:#FF8C42;--orange-light:#FFF3E8;--red:#FF4D6A;--red-light:#FFE8EC;--sidebar:220px;}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink);}
+h1,h2,h3,h4{font-family:'Syne',sans-serif;}
+.app{display:flex;height:100vh;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar);flex-shrink:0;background:var(--ink);display:flex;flex-direction:column;overflow-y:auto;}
+.sidebar-logo{padding:22px 20px 18px;font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:white;letter-spacing:-0.03em;border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer;}
+.sidebar-logo span{color:var(--blue);}
+.sidebar-section{padding:16px 12px 5px;font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.25);}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;margin:1px 8px;border-radius:10px;cursor:pointer;font-size:.875rem;font-weight:500;color:rgba(255,255,255,.55);transition:all .2s;text-decoration:none;}
+.nav-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.9);}
+.nav-item.active{background:var(--blue);color:white;}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;}
+.sidebar-footer{margin-top:auto;padding:16px 12px;border-top:1px solid rgba(255,255,255,.07);}
+.user-pill{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.05);cursor:pointer;}
+.user-pill:hover{background:rgba(255,255,255,.09);}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:white;flex-shrink:0;}
+.user-name{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.85);}
+.user-plan{font-size:.7rem;color:rgba(255,255,255,.35);}
+.logout-btn{width:100%;margin-top:8px;padding:8px;background:rgba(255,77,106,.15);border:none;border-radius:8px;color:var(--red);font-family:'DM Sans',sans-serif;font-size:.8rem;cursor:pointer;transition:.2s;}
+.logout-btn:hover{background:rgba(255,77,106,.25);}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;}
+.topbar-title{font-size:1.1rem;font-weight:700;}
+.btn-blue{padding:.5rem 1.2rem;background:var(--blue);color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px;text-decoration:none;}
+.btn-blue:hover{background:var(--blue-dark);}
+
+/* CONTENT */
+.content{padding:24px 28px;}
+
+/* STATUS BAR */
+.status-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;font-size:.82rem;font-weight:600;margin-bottom:20px;justify-content:space-between;}
+.status-bar.online{background:var(--green-light);color:var(--green);}
+.status-bar.offline{background:var(--orange-light);color:var(--orange);}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.status-online .status-dot{background:var(--green);animation:pulse 1.5s infinite;}
+.status-offline .status-dot{background:var(--orange);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.status-actions{display:flex;gap:8px;}
+.status-link-btn{padding:4px 12px;border-radius:20px;background:rgba(0,0,0,.06);font-size:.75rem;font-weight:600;cursor:pointer;border:none;color:inherit;text-decoration:none;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px;transition:.2s;}
+.stat-card:hover{box-shadow:0 6px 20px rgba(10,15,30,.07);transform:translateY(-2px);}
+.stat-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.stat-trend{font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:20px;}
+.trend-up{background:var(--green-light);color:var(--green);}
+.stat-val{font-family:'Syne',sans-serif;font-weight:800;font-size:1.7rem;letter-spacing:-0.03em;}
+.stat-label{font-size:.78rem;color:var(--ink-muted);margin-top:2px;}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:20px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.card-title{font-size:.92rem;font-weight:700;}
+.card-link{font-size:.78rem;color:var(--blue);text-decoration:none;cursor:pointer;border:none;background:none;}
+
+/* CHART */
+.chart-area{height:140px;display:flex;align-items:flex-end;gap:5px;}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.bar{width:100%;border-radius:5px 5px 0 0;min-height:4px;cursor:pointer;transition:.2s;}
+.bar.blue{background:var(--blue-light);}
+.bar.blue:hover{background:var(--blue);}
+.bar-label{font-size:.62rem;color:var(--ink-muted);}
+
+/* ACTIONS */
+.actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.action-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 8px;border:1.5px solid var(--border);border-radius:12px;background:none;cursor:pointer;transition:.2s;text-decoration:none;}
+.action-btn:hover{border-color:var(--blue);background:var(--blue-light);}
+.action-icon{font-size:1.3rem;}
+.action-label{font-size:.72rem;font-weight:600;color:var(--ink-soft);}
+
+/* SITE INFO */
+.site-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.info-item{background:var(--surface);border-radius:10px;padding:12px;}
+.info-key{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-muted);margin-bottom:4px;}
+.info-val{font-size:.85rem;font-weight:600;color:var(--ink);word-break:break-all;}
+.info-val.blue{color:var(--blue);}
+.info-val.green{color:var(--green);}
+.info-val.orange{color:var(--orange);}
+.publish-toggle{width:100%;margin-top:12px;padding:10px;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:.2s;}
+.publish-toggle.published{background:var(--green-light);color:var(--green);}
+.publish-toggle.unpublished{background:var(--blue);color:white;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:white;padding:11px 18px;border-radius:10px;font-size:.83rem;transform:translateY(60px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:999;}
+.toast.show{transform:none;opacity:1;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-logo" onclick="location.href='/'">Quick<span>io</span></div>
+    <div class="sidebar-section">Mon site</div>
+    <a class="nav-item active" href="/dashboard"><span class="icon">📊</span> Tableau de bord</a>
+    <a class="nav-item" href="/editor"><span class="icon">✏️</span> Éditeur</a>
+    <a class="nav-item" href="/templates"><span class="icon">🎨</span> Templates</a>
+    <div class="sidebar-section">Compte</div>
+    <a class="nav-item" href="#" onclick="showToast('Section en cours de développement')"><span class="icon">⚙️</span> Paramètres</a>
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="avatar" id="user-avatar">?</div>
+        <div>
+          <div class="user-name" id="user-name">Chargement…</div>
+          <div class="user-plan" id="user-plan">Plan gratuit</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="logout()">🚪 Se déconnecter</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title">Tableau de bord</div>
+      <a class="btn-blue" href="/editor">✏️ Modifier mon site</a>
+    </div>
+
+    <div class="content">
+      <!-- STATUS BAR -->
+      <div class="status-bar offline" id="status-bar">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="status-dot"></span>
+          <span id="status-text">Chargement…</span>
+        </div>
+        <div class="status-actions">
+          <button class="status-link-btn" onclick="copyLink()" id="copy-link-btn" style="display:none">📋 Copier le lien</button>
+          <button class="status-link-btn" onclick="openSite()" id="open-site-btn" style="display:none">🌐 Ouvrir</button>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-icon" style="background:var(--blue-light)">👁️</div><span class="stat-trend trend-up">ce mois</span></div>
+          <div class="stat-val" id="stat-visits">—</div>
+          <div class="stat-label">Visites totales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-icon" style="background:var(--green-light)">🖱️</div><span class="stat-trend trend-up">clics</span></div>
+          <div class="stat-val" id="stat-clicks">—</div>
+          <div class="stat-label">Clics sur CTA</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-icon" style="background:var(--orange-light)">📅</div><span class="stat-trend trend-up">rdv</span></div>
+          <div class="stat-val" id="stat-rdv">—</div>
+          <div class="stat-label">RDV pris</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-icon" style="background:#FFF3E8">📝</div><span class="stat-trend trend-up">édits</span></div>
+          <div class="stat-val" id="stat-updated">—</div>
+          <div class="stat-label">Dernière modif.</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- CHART -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">Visites simulées — 7 jours</span></div>
+          <div class="chart-area" id="chart"></div>
+        </div>
+
+        <!-- SITE INFO -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">Mon site</span></div>
+          <div class="site-info-grid">
+            <div class="info-item"><div class="info-key">Nom</div><div class="info-val" id="info-name">—</div></div>
+            <div class="info-item"><div class="info-key">Métier</div><div class="info-val" id="info-metier">—</div></div>
+            <div class="info-item"><div class="info-key">Statut</div><div class="info-val" id="info-status">—</div></div>
+            <div class="info-item"><div class="info-key">URL</div><div class="info-val blue" id="info-url" style="font-size:.72rem">—</div></div>
+          </div>
+          <button class="publish-toggle unpublished" id="publish-btn" onclick="togglePublish()">🚀 Publier mon site</button>
+        </div>
+      </div>
+
+      <!-- BOTTOM -->
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Contenu actuel</span></div>
+          <div id="content-summary" style="font-size:.82rem;color:var(--ink-soft);line-height:1.8;">Chargement…</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Design actuel</span></div>
+          <div id="design-summary" style="font-size:.82rem;color:var(--ink-soft);line-height:1.8;">Chargement…</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Actions rapides</span></div>
+          <div class="actions-grid">
+            <a class="action-btn" href="/editor"><span class="action-icon">✏️</span><span class="action-label">Modifier site</span></a>
+            <button class="action-btn" onclick="copyLink()"><span class="action-icon">📋</span><span class="action-label">Copier lien</span></button>
+            <a class="action-btn" href="/editor" onclick="setTimeout(()=>{},100)"><span class="action-icon">🎨</span><span class="action-label">Changer design</span></a>
+            <button class="action-btn" onclick="openSite()"><span class="action-icon">🌐</span><span class="action-label">Voir le site</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let siteData = null;
+
+async function init() {
+  // Auth check
+  const mr = await fetch('/api/auth/me').catch(() => null);
+  if (!mr || !mr.ok) { window.location.href = '/auth'; return; }
+  const me = await mr.json();
+
+  // Set user info
+  document.getElementById('user-avatar').textContent = (me.firstname||'?')[0].toUpperCase();
+  document.getElementById('user-name').textContent = me.firstname + ' ' + (me.lastname||'');
+  document.getElementById('user-plan').textContent = 'Plan ' + me.plan;
+
+  // Load site
+  const sr = await fetch('/api/site').catch(() => null);
+  if (!sr || !sr.ok) { showToast('Erreur chargement'); return; }
+  siteData = await sr.json();
+
+  updateUI();
+  buildChart();
+}
+
+function updateUI() {
+  if (!siteData) return;
+  const c = siteData.content;
+  const d = siteData.design;
+  const subdomain = siteData.domain?.subdomain || siteData.slug;
+  const siteUrl = `http://localhost:3000/site/${subdomain}`;
+
+  // Status bar
+  const bar = document.getElementById('status-bar');
+  const statusText = document.getElementById('status-text');
+  if (siteData.published) {
+    bar.className = 'status-bar online';
+    statusText.textContent = '● Site en ligne · ' + siteUrl;
+    document.getElementById('copy-link-btn').style.display = '';
+    document.getElementById('open-site-btn').style.display = '';
+  } else {
+    bar.className = 'status-bar offline';
+    statusText.textContent = '⚠ Site non publié — cliquez sur Publier pour le mettre en ligne';
+  }
+
+  // Stats
+  document.getElementById('stat-visits').textContent = siteData.stats?.visits || 0;
+  document.getElementById('stat-clicks').textContent = siteData.stats?.clicks || 0;
+  document.getElementById('stat-rdv').textContent = siteData.stats?.rdv || 0;
+  const updated = siteData.updatedAt ? new Date(siteData.updatedAt).toLocaleDateString('fr-FR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+  document.getElementById('stat-updated').textContent = updated;
+
+  // Info
+  document.getElementById('info-name').textContent = c.name || '—';
+  document.getElementById('info-metier').textContent = c.metier || '—';
+  document.getElementById('info-url').textContent = `localhost:3000/site/${subdomain}`;
+
+  const publishBtn = document.getElementById('publish-btn');
+  if (siteData.published) {
+    document.getElementById('info-status').textContent = '🟢 En ligne';
+    document.getElementById('info-status').className = 'info-val green';
+    publishBtn.textContent = '✅ Publié — Cliquer pour dépublier';
+    publishBtn.className = 'publish-toggle published';
+  } else {
+    document.getElementById('info-status').textContent = '⚠️ Hors ligne';
+    document.getElementById('info-status').className = 'info-val orange';
+    publishBtn.textContent = '🚀 Publier mon site';
+    publishBtn.className = 'publish-toggle unpublished';
+  }
+
+  // Content summary
+  document.getElementById('content-summary').innerHTML = `
+    <b>Nom :</b> ${c.name || '—'}<br>
+    <b>Slogan :</b> ${c.tagline || '—'}<br>
+    <b>Ville :</b> ${c.city || '—'}<br>
+    <b>Tél :</b> ${c.phone || '—'}<br>
+    <b>Services :</b> ${(c.services||[]).length} configurés<br>
+    <b>Bouton CTA :</b> ${c.ctaText || '—'}
+  `;
+
+  // Design summary
+  document.getElementById('design-summary').innerHTML = `
+    <b>Couleur :</b> <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${d.primaryColor};vertical-align:middle;margin-right:4px"></span>${d.primaryColor}<br>
+    <b>Police :</b> ${d.fontFamily}<br>
+    <b>Thème :</b> ${d.theme === 'dark' ? '🌙 Sombre' : '☀️ Clair'}<br>
+    <b>Template :</b> ${d.template || 'Moderne'}<br>
+    <b>Services :</b> ${d.showServices !== false ? '✅ Visible' : '❌ Masqué'}<br>
+    <b>Contact :</b> ${d.showContact !== false ? '✅ Visible' : '❌ Masqué'}
+  `;
+}
+
+function buildChart() {
+  const visits = [28, 45, 33, 62, 58, 74, siteData?.stats?.visits || 5];
+  const days = ['Lun','Mar','Mer','Jeu','Ven','Sam','Auj'];
+  const max = Math.max(...visits);
+  const chart = document.getElementById('chart');
+  chart.innerHTML = '';
+  visits.forEach((v, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'bar-wrap';
+    const pct = Math.max(8, Math.round((v / max) * 100));
+    wrap.innerHTML = `
+      <div class="bar blue" style="height:${pct}%" title="${v} visites"></div>
+      <div class="bar-label">${days[i]}</div>`;
+    chart.appendChild(wrap);
+  });
+}
+
+async function togglePublish() {
+  const r = await fetch('/api/site/publish', { method: 'POST' });
+  if (r.ok) {
+    const data = await r.json();
+    siteData.published = data.published;
+    updateUI();
+    const subdomain = siteData.domain?.subdomain || siteData.slug;
+    showToast(data.published ? `🚀 Site publié ! → localhost:3000/site/${subdomain}` : 'Site dépublié');
+  }
+}
+
+function copyLink() {
+  const subdomain = siteData?.domain?.subdomain || siteData?.slug;
+  if (!subdomain) return;
+  navigator.clipboard.writeText(`http://localhost:3000/site/${subdomain}`)
+    .then(() => showToast('✅ Lien copié dans le presse-papiers !'));
+}
+
+function openSite() {
+  const subdomain = siteData?.domain?.subdomain || siteData?.slug;
+  if (subdomain && siteData?.published) window.open(`/site/${subdomain}`, '_blank');
+  else showToast('Publiez d\'abord votre site !');
+}
+
+async function logout() {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/auth';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+init();
+</script>
+</body>
+</html>

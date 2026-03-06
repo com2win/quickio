@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Quickio — Templates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--blue:#1A6BFF;--blue-dark:#0D4FCC;--blue-light:#E8F0FF;--ink:#0A0F1E;--ink-soft:#3A4260;--ink-muted:#8892A4;--surface:#F7F9FF;--white:#fff;--border:#E2E8F8;--green:#00C97A;}
+body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink);}
+h1,h2,h3{font-family:'Syne',sans-serif;}
+a{text-decoration:none;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 5%;height:62px;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;color:var(--blue);}
+.logo span{color:var(--ink);}
+.nav-right{display:flex;gap:10px;align-items:center;}
+.btn-ghost{padding:0.45rem 1.1rem;border:1.5px solid var(--border);border-radius:50px;background:none;color:var(--ink-soft);font-family:'DM Sans',sans-serif;font-size:0.85rem;cursor:pointer;transition:all .2s;}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue);}
+.btn-primary{padding:0.5rem 1.2rem;border:none;border-radius:50px;background:var(--blue);color:white;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(26,107,255,.3);}
+.btn-primary:hover{background:var(--blue-dark);}
+
+/* HERO */
+.page-hero{padding:64px 5% 40px;text-align:center;}
+.page-hero h1{font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-0.04em;}
+.page-hero p{font-size:1.05rem;color:var(--ink-soft);margin:1rem auto 0;max-width:480px;line-height:1.65;}
+
+/* FILTERS */
+.filters-wrap{padding:0 5% 32px;display:flex;flex-direction:column;gap:16px;align-items:center;}
+.search-bar{display:flex;align-items:center;gap:10px;background:white;border:1.5px solid var(--border);border-radius:50px;padding:0 16px;width:100%;max-width:460px;transition:border .2s;}
+.search-bar:focus-within{border-color:var(--blue);}
+.search-bar input{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:0.9rem;padding:10px 0;background:none;}
+.filter-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.chip{padding:7px 16px;border-radius:50px;border:1.5px solid var(--border);background:white;font-size:0.82rem;font-weight:500;color:var(--ink-soft);cursor:pointer;transition:all .2s;}
+.chip:hover{border-color:var(--blue);color:var(--blue);}
+.chip.active{background:var(--blue);border-color:var(--blue);color:white;}
+
+/* GRID */
+.templates-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px;padding:0 5% 80px;}
+
+/* TEMPLATE CARD */
+.tpl-card{background:white;border:1.5px solid var(--border);border-radius:16px;overflow:hidden;transition:all .28s;cursor:pointer;}
+.tpl-card:hover{transform:translateY(-5px);box-shadow:0 20px 50px rgba(10,15,30,0.10);border-color:rgba(26,107,255,0.25);}
+.tpl-preview{height:220px;position:relative;overflow:hidden;}
+.tpl-preview .overlay{position:absolute;inset:0;background:rgba(10,15,30,0);display:flex;align-items:center;justify-content:center;gap:10px;transition:background .25s;opacity:0;}
+.tpl-card:hover .overlay{background:rgba(10,15,30,0.45);opacity:1;}
+.overlay-btn{padding:9px 18px;border-radius:24px;font-size:0.82rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+.overlay-btn.primary{background:white;color:var(--blue);}
+.overlay-btn.primary:hover{background:var(--blue);color:white;}
+.overlay-btn.secondary{background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);}
+.tpl-info{padding:16px 18px;}
+.tpl-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.tpl-name{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;}
+.tpl-badge{font-size:0.68rem;font-weight:700;padding:3px 9px;border-radius:20px;}
+.badge-free{background:var(--blue-light);color:var(--blue);}
+.badge-pro{background:#F3F0FF;color:#7C3AED;}
+.badge-new{background:#E6FBF2;color:var(--green);}
+.tpl-sector{font-size:0.78rem;color:var(--ink-muted);}
+.tpl-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;}
+.tpl-tag{font-size:0.68rem;padding:3px 9px;background:var(--surface);border-radius:20px;color:var(--ink-soft);}
+
+/* MINI SITE PREVIEWS — inline CSS per template */
+.mini-site{width:100%;height:100%;display:flex;flex-direction:column;}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:white;padding:12px 18px;border-radius:10px;font-size:0.85rem;transform:translateY(60px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:999;}
+.toast.show{transform:none;opacity:1;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo" style="cursor:pointer" onclick="window.location='/'" >Quick<span>io</span></div>
+  <div class="nav-right">
+    <button class="btn-ghost">← Retour</button>
+    <button class="btn-primary">Mon dashboard →</button>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>Choisissez votre template</h1>
+  <p>Des dizaines de designs professionnels, prêts à personnaliser en 5 minutes pour votre activité.</p>
+</div>
+
+<div class="filters-wrap">
+  <div class="search-bar">
+    <span>🔍</span>
+    <input type="text" placeholder="Rechercher un template..." oninput="filterTemplates(this.value)"/>
+  </div>
+  <div class="filter-chips">
+    <div class="chip active" onclick="filterCat('all',this)">Tous (24)</div>
+    <div class="chip" onclick="filterCat('artisan',this)">🔨 Artisans</div>
+    <div class="chip" onclick="filterCat('resto',this)">🍽️ Restauration</div>
+    <div class="chip" onclick="filterCat('beaute',this)">💅 Beauté</div>
+    <div class="chip" onclick="filterCat('sante',this)">🏥 Santé</div>
+    <div class="chip" onclick="filterCat('commerce',this)">🛍️ Commerce</div>
+    <div class="chip" onclick="filterCat('freelance',this)">💻 Freelance</div>
+    <div class="chip" onclick="filterCat('sport',this)">🏋️ Sport</div>
+  </div>
+</div>
+
+<div class="templates-grid" id="grid">
+
+  <!-- TEMPLATE 1 -->
+  <div class="tpl-card" data-cat="artisan">
+    <div class="tpl-preview" style="background:linear-gradient(135deg,#0A0F1E 0%,#1A2540 100%)">
+      <div style="padding:20px;color:white;height:100%">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:6px">⚡ Marc Électricien</div>
+        <div style="font-size:0.7rem;opacity:.6;margin-bottom:14px">Nantes · 7j/7</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
+          <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:8px;font-size:0.65rem"><div style="font-size:0.9rem;margin-bottom:2px">⚡</div>Installation</div>
+          <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:8px;font-size:0.65rem"><div style="font-size:0.9rem;margin-bottom:2px">🔧</div>Dépannage</div>
+        </div>
+        <div style="background:#1A6BFF;border-radius:20px;padding:7px 14px;font-size:0.72rem;font-weight:600;display:inline-block">📅 Prendre RDV</div>
+      </div>
+      <div class="overlay">
+        <button class="overlay-btn primary" onclick="useTemplate('Électricien Pro')">Utiliser →</button>
+        <button class="overlay-btn secondary" onclick="previewTemplate('Électricien Pro')">Aperçu</button>
+      </div>
+    </div>
+    <div class="tpl-info">
+      <div class="tpl-top"><span class="tpl-name">Électricien Pro</span><span class="tpl-badge badge-free">Gratuit</span></div>
+      <div class="tpl-sector">🔨 Artisans · Électricité</div>
+      <div class="tpl-tags"><span class="tpl-tag">RDV</span><span class="tpl-tag">Dark</span><span class="tpl-tag">Moderne</span></div>
+    </div>
+  </div>
+
+  <!-- TEMPLATE 2 -->
+  <div class="tpl-card" data-cat="resto">
+    <div class="tpl-preview" style="background:linear-gradient(160deg,#1A0A00 0%,#3D1500 100%)">
+      <div style="padding:20px;color:white;height:100%">
+        <div style="font-size:0.65rem;letter-spacing:.1em;opacity:.5;margin-bottom:4px">RESTAURANT</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:2px">La Bella Vista</div>
+        <div style="color:#FF8C42;font-size:0.7rem;margin-bottom:12px">Cuisine italienne · Lyon</div>
+        <div style="display:flex;gap:6px;margin-bottom:12px">
+          <div style="background:rgba(255,140,66,0.15);border:1px solid rgba(255,140,66,0.3);border-radius:8px;padding:6px 10px;font-size:0.65rem">🍕 Menu</div>
+          <div style="background:rgba(255,140,66,0.15);border:1px solid rgba(255,140,66,0.3);border-radius:8px;padding:6px 10px;font-size:0.65rem">📅 Réserver</div>
+          <div style="background:rgba(255,140,66,0.15);border:1px solid rgba(255,140,66,0.3);border-radius:8px;padding:6px 10px;font-size:0.65rem">⭐ Avis</div>
+        </div>
+        <div style="font-size:0.65rem;opacity:.5">Ouvert Mar-Dim · 12h-14h · 19h-22h</div>
+      </div>
+      <div class="overlay">
+        <button class="overlay-btn primary" onclick="useTemplate('Bella Vista')">Utiliser →</button>
+        <button class="overlay-btn secondary" onclick="previewTemplate('Bella Vista')">Aperçu</button>
+      </div>
+    </div>
+    <div class="tpl-info">
+      <div class="tpl-top"><span class="tpl-name">Bella Vista</span><span class="tpl-badge badge-new">Nouveau</span></div>
+      <div class="tpl-sector">🍽️ Restaurant · Pizzeria</div>
+      <div class="tpl-tags"><span class="tpl-tag">Menu</span><span class="tpl-tag">Réservation</span><span class="tpl-tag">Warm</span></div>
+    </div>
+  </div>
+
+  <!-- TEMPLATE 3 -->
+  <div class="tpl-card" data-cat="beaute">
+    <div class="tpl-preview" style="background:linear-gradient(140deg,#FDF0F8 0%,#F5D6EC 100%)">
+      <div style="padding:20px;height:100%">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#5B1B4A;margin-bottom:2px">✂️ Atelier Sarah</div>
+        <div style="font-size:0.68rem;color:#9B5B84;margin-bottom:14px">Coiffeuse · Bordeaux</div>
+        <div style="display:flex;gap:5px;margin-bottom:12px">
+          <div style="background:white;border-radius:20px;padding:5px 10px;font-size:0.65rem;color:#5B1B4A;font-weight:600">Coupe</div>
+          <div style="background:white;border-radius:20px;padding:5px 10px;font-size:0.65rem;color:#5B1B4A;font-weight:600">Couleur</div>
+          <div style="background:white;border-radius:20px;padding:5px 10px;font-size:0.65rem;color:#5B1B4A;font-weight:600">Soin</div>
+        </div>
+        <div style="background:#C45E9B;border-radius:20px;padding:8px 16px;font-size:0.72rem;font-weight:700;color:white;display:inline-block">📅 Réserver un soin</div>
+        <div style="margin-top:10px;font-size:0.65rem;color:#9B5B84">⭐⭐⭐⭐⭐ · 89 avis Google</div>
+      </div>
+      <div class="overlay">
+        <button class="overlay-btn primary" onclick="useTemplate('Atelier Sarah')">Utiliser →</button>
+        <button class="overlay-btn secondary" onclick="previewTemplate('Atelier Sarah')">Aperçu</button>
+      </div>
+    </div>
+    <div class="tpl-info">
+      <div class="tpl-top"><span class="tpl-name">Atelier Beauty</span><span class="tpl-badge badge-free">Gratuit</span></div>
+      <div class="tpl-sector">💅 Beauté · Coiffure</div>
+      <div class="tpl-tags"><span class="tpl-tag">RDV</span><span class="tpl-tag">Rose</span><span class="tpl-tag">Élégant</span></div>
+    </div>
+  </div>
+
+  <!-- TEMPLATE 4 -->
+  <div class="tpl-card" data-cat="freelance">
+    <div class="tpl-preview" style="background:linear-gradient(135deg,#F0F7FF 0%,#E0ECFF 100%)">
+      <div style="padding:20px;height:100%">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <div style="width:36px;height:36px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.85rem;font-weight:700">JD</div>
+          <div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem">Julie Dupont</div><div style="font-size:0.65rem;color:var(--ink-muted)">Designer UI/UX · Freelance</div></div>
+        </div>
+        <div style="background:white;border-radius:8px;padding:8px 12px;font-size:0.7rem;color:var(--ink-soft);margin-bottom:8px;border:1px solid var(--border)">✓ Disponible pour missions</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px">
+          <div style="background:white;border-radius:8px;padding:6px;text-align:center;border:1px solid var(--border)"><div style="font-size:0.7rem;font-weight:700">48</div><div style="font-size:0.58rem;color:var(--ink-muted)">Projets</div></div>
+          <div style="background:white;border-radius:8px;padding:6px;text-align:center;border:1px solid var(--border)"><div style="font-size:0.7rem;font-weight:700">5★</div><div style="font-size:0.58rem;color:var(--ink-muted)">Note</div></div>
+          <div style="background:white;border-radius:8px;padding:6px;text-align:center;border:1px solid var(--border)"><div style="font-size:0.7rem;font-weight:700">6 ans</div><div style="font-size:0.58rem;color:var(--ink-muted)">Expérience</div></div>
+        </div>
+      </div>
+      <div class="overlay">
+        <button class="overlay-btn primary" onclick="useTemplate('Portfolio Pro')">Utiliser →</button>
+        <button class="overlay-btn secondary" onclick="previewTemplate('Portfolio Pro')">Aperçu</button>
+      </div>
+    </div>
+    <div class="tpl-info">
+      <div class="tpl-top"><span class="tpl-name">Portfolio Pro</span><span class="tpl-badge badge-pro">Pro</span></div>
+      <div class="tpl-sector">💻 Freelance · Designer</div>
+      <div class="tpl-tags"><span class="tpl-tag">Portfolio</span><span class="tpl-tag">Minimaliste</span><span class="tpl-tag">Pro</span></div>
+    </div>
+  </div>
+
+  <!-- TEMPLATE 5 -->
+  <div class="tpl-card" data-cat="sante">
+    <div class="tpl-preview" style="background:linear-gradient(140deg,#F0FDF8 0%,#D1FAE5 100%)">
+      <div style="padding:20px;height:100%">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:#065F46;margin-bottom:2px">🏥 Cabinet Santé+</div>
+        <div style="font-size:0.68rem;color:#059669;margin-bottom:12px">Dr. Claire Lefèvre · Kinésithérapeute</div>
+        <div style="background:white;border-radius:10px;padding:10px 12px;margin-bottom:10px">
+          <div style="font-size:0.65rem;font-weight:600;color:#065F46;margin-bottom:6px">📅 Prochain créneau disponible</div>
+          <div style="display:flex;gap:5px">
+            <div style="background:#D1FAE5;border-radius:6px;padding:4px 7px;font-size:0.62rem;color:#065F46;font-weight:600">Lun 15h</div>
+            <div style="background:#D1FAE5;border-radius:6px;padding:4px 7px;font-size:0.62rem;color:#065F46;font-weight:600">Mar 9h</div>
+            <div style="background:#D1FAE5;border-radius:6px;padding:4px 7px;font-size:0.62rem;color:#065F46;font-weight:600">Jeu 11h</div>
+          </div>
+        </div>
+        <div style="background:#059669;border-radius:20px;padding:7px 14px;font-size:0.72rem;font-weight:600;color:white;display:inline-block">Réserver un créneau</div>
+      </div>
+      <div class="overlay">
+        <button class="overlay-btn primary" onclick="useTemplate('Cabinet Santé')">Utiliser →</button>
+        <button class="overlay-btn secondary" onclick="previewTemplate('Cabinet Santé')">Aperçu</button>
+      </div>
+    </div>
+    <div class="tpl-info">
+      <div class="tpl-top"><span class="tpl-name">Cabinet Santé</span><span class="tpl-badge badge-pro">Pro</span></div>
+      <div class="tpl-sector">🏥 Santé · Bien-être</div>
+      <div class="tpl-tags"><span class="tpl-tag">RDV</span><span class="tpl-tag">Vert</span><span class="tpl-tag">Médical</span></div>
+    </div>
+  </div>
+
+  <!-- TEMPLATE 6 -->
+  <div class="tpl-card" data-cat="commerce">
+    <div class="tpl-preview" style="background:linear-gradient(135deg,#FFFBEB 0%,#FEF3C7 100%)">
+      <div style="padding:20px;height:100%">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:#92400E;margin-bottom:2px">☕ Café des Arts</div>
+        <div style="font-size:0.65rem;color:#B45309;margin-bottom:12px">Salon de thé · Paris 11e</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+          <div style="background:white;border-radius:8px;padding:8px;border:1px solid rgba(180,83,9,.15)"><div style="font-size:0.9rem">☕</div><div style="font-size:0.62rem;color:#92400E;font-weight:600">Boissons</div></div>
+          <div style="background:white;border-radius:8px;padding:8px;border:1px solid rgba(180,83,9,.15)"><div style="font-size:0.9rem">🥐</div><div style="font-size:0.62rem;color:#92400E;font-weight:600">Pâtisseries</div></div>
+        </div>
+        <div style="font-size:0.62rem;color:#B45309">⭐⭐⭐⭐⭐ · Ouvert 8h–19h · Lun-Sam</div>
+      </div>
+      <div class="overlay">
+        <button class="overlay-btn primary" onclick="useTemplate('Café Gourmet')">Utiliser →</button>
+        <button class="overlay-btn secondary" onclick="previewTemplate('Café Gourmet')">Aperçu</button>
+      </div>
+    </div>
+    <div class="tpl-info">
+      <div class="tpl-top"><span class="tpl-name">Café Gourmet</span><span class="tpl-badge badge-free">Gratuit</span></div>
+      <div class="tpl-sector">🛍️ Commerce · Café</div>
+      <div class="tpl-tags"><span class="tpl-tag">Menu</span><span class="tpl-tag">Warm</span><span class="tpl-tag">Local</span></div>
+    </div>
+  </div>
+
+  <!-- TEMPLATE 7 -->
+  <div class="tpl-card" data-cat="sport">
+    <div class="tpl-preview" style="background:linear-gradient(135deg,#18181B 0%,#27272A 100%)">
+      <div style="padding:20px;height:100%">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:white;margin-bottom:2px">💪 FitCoach Pro</div>
+        <div style="font-size:0.65rem;color:#22D3EE;margin-bottom:12px">Coach sportif certifié · En ligne & Présentiel</div>
+        <div style="display:flex;gap:6px;margin-bottom:12px">
+          <div style="background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.2);border-radius:8px;padding:6px 10px;font-size:0.62rem;color:#22D3EE">🏋️ Muscu</div>
+          <div style="background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.2);border-radius:8px;padding:6px 10px;font-size:0.62rem;color:#22D3EE">🥗 Nutrition</div>
+          <div style="background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.2);border-radius:8px;padding:6px 10px;font-size:0.62rem;color:#22D3EE">🧘 Cardio</div>
+        </div>
+        <div style="background:#22D3EE;border-radius:20px;padding:7px 14px;font-size:0.72rem;font-weight:700;color:#18181B;display:inline-block">Session découverte →</div>
+      </div>
+      <div class="overlay">
+        <button class="overlay-btn primary" onclick="useTemplate('FitCoach')">Utiliser →</button>
+        <button class="overlay-btn secondary" onclick="previewTemplate('FitCoach')">Aperçu</button>
+      </div>
+    </div>
+    <div class="tpl-info">
+      <div class="tpl-top"><span class="tpl-name">FitCoach Dark</span><span class="tpl-badge badge-new">Nouveau</span></div>
+      <div class="tpl-sector">🏋️ Sport · Coaching</div>
+      <div class="tpl-tags"><span class="tpl-tag">Dark</span><span class="tpl-tag">Dynamique</span><span class="tpl-tag">RDV</span></div>
+    </div>
+  </div>
+
+  <!-- TEMPLATE 8 -->
+  <div class="tpl-card" data-cat="artisan">
+    <div class="tpl-preview" style="background:linear-gradient(140deg,#FAFAF9 0%,#F5F5F0 100%)">
+      <div style="padding:20px;height:100%">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="width:32px;height:32px;background:#1C1917;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:0.9rem">🪚</div>
+          <div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem">Menuiserie Duval</div><div style="font-size:0.6rem;color:#78716C">Artisan certifié RGE</div></div>
+        </div>
+        <div style="background:white;border-radius:8px;padding:8px 12px;font-size:0.68rem;color:#57534E;border:1px solid #E7E5E4;margin-bottom:8px">📍 Toulouse · Rayon 50km · Devis gratuit</div>
+        <div style="background:#1C1917;border-radius:8px;padding:7px 14px;font-size:0.7rem;font-weight:600;color:white;display:inline-block">Demander un devis</div>
+      </div>
+      <div class="overlay">
+        <button class="overlay-btn primary" onclick="useTemplate('Artisan Classique')">Utiliser →</button>
+        <button class="overlay-btn secondary" onclick="previewTemplate('Artisan Classique')">Aperçu</button>
+      </div>
+    </div>
+    <div class="tpl-info">
+      <div class="tpl-top"><span class="tpl-name">Artisan Classique</span><span class="tpl-badge badge-free">Gratuit</span></div>
+      <div class="tpl-sector">🔨 Artisans · Menuiserie</div>
+      <div class="tpl-tags"><span class="tpl-tag">Devis</span><span class="tpl-tag">Sobre</span><span class="tpl-tag">Classique</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function filterCat(cat, el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.tpl-card').forEach(card=>{
+    card.style.display = (cat==='all' || card.dataset.cat===cat) ? '' : 'none';
+  });
+}
+function filterTemplates(q){
+  q=q.toLowerCase();
+  document.querySelectorAll('.tpl-card').forEach(card=>{
+    const txt=card.textContent.toLowerCase();
+    card.style.display=txt.includes(q)?'':'none';
+  });
+}
+function useTemplate(name){
+  showToast('Template "'+name+'" sélectionné — Éditeur ouvert !');
+  setTimeout(()=>{ window.location='/editor'; },1500);
+}
+function previewTemplate(name){
+  showToast('Aperçu "'+name+'" chargé');
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>

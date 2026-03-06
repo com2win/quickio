@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Quickio — Connexion</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--blue:#1A6BFF;--blue-dark:#0D4FCC;--blue-light:#E8F0FF;--ink:#0A0F1E;--ink-soft:#3A4260;--ink-muted:#8892A4;--surface:#F7F9FF;--white:#fff;--border:#E2E8F8;--green:#00C97A;--red:#FF4D6A;}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink);}
+h1,h2,h3{font-family:'Syne',sans-serif;}
+.page{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;}
+.left{background:var(--ink);display:flex;flex-direction:column;justify-content:center;padding:60px 56px;position:relative;overflow:hidden;}
+.left::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 20% 80%,rgba(26,107,255,0.25) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 80% 20%,rgba(74,143,255,0.12) 0%,transparent 50%);}
+.left-content{position:relative;z-index:1;}
+.left-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;color:white;margin-bottom:48px;cursor:pointer;}
+.left-logo span{color:var(--blue);}
+.left-title{font-size:clamp(1.8rem,2.5vw,2.4rem);font-weight:800;color:white;letter-spacing:-0.03em;line-height:1.15;margin-bottom:1rem;}
+.left-sub{font-size:.95rem;color:rgba(255,255,255,0.5);line-height:1.65;max-width:340px;margin-bottom:40px;}
+.left-features{display:flex;flex-direction:column;gap:12px;}
+.feat-row{display:flex;align-items:center;gap:12px;font-size:.875rem;color:rgba(255,255,255,0.7);}
+.feat-check{width:22px;height:22px;border-radius:50%;background:rgba(0,201,122,.15);border:1px solid rgba(0,201,122,.3);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--green);flex-shrink:0;}
+.right{display:flex;align-items:center;justify-content:center;padding:40px 48px;background:var(--white);}
+.auth-box{width:100%;max-width:420px;}
+.auth-tabs{display:flex;background:var(--surface);border-radius:12px;padding:4px;margin-bottom:28px;}
+.auth-tab{flex:1;padding:10px;border:none;border-radius:9px;background:none;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:600;color:var(--ink-muted);cursor:pointer;transition:all .2s;}
+.auth-tab.active{background:white;color:var(--ink);box-shadow:0 2px 8px rgba(10,15,30,.08);}
+.auth-title{font-size:1.5rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:4px;}
+.auth-sub{font-size:.875rem;color:var(--ink-muted);margin-bottom:24px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:.8rem;font-weight:600;color:var(--ink-soft);margin-bottom:6px;}
+.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:var(--white);outline:none;transition:all .2s;}
+.form-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,107,255,.1);}
+.input-wrap{position:relative;}
+.input-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:.9rem;cursor:pointer;color:var(--ink-muted);}
+.pw-strength{margin-top:6px;}
+.pw-bars{display:flex;gap:3px;margin-bottom:3px;}
+.pw-bar{flex:1;height:3px;background:var(--border);border-radius:2px;transition:background .3s;}
+.pw-bar.weak{background:var(--red);}
+.pw-bar.medium{background:#FF8C42;}
+.pw-bar.strong{background:var(--green);}
+.pw-label{font-size:.72rem;color:var(--ink-muted);}
+.checkbox-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:20px;}
+.checkbox-row input[type=checkbox]{margin-top:2px;accent-color:var(--blue);cursor:pointer;}
+.checkbox-row label{font-size:.8rem;color:var(--ink-muted);line-height:1.5;}
+.checkbox-row label a{color:var(--blue);}
+.forgot-link{display:block;text-align:right;font-size:.8rem;color:var(--blue);cursor:pointer;margin-bottom:16px;}
+.btn-submit{width:100%;padding:13px;background:var(--blue);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(26,107,255,.35);transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-submit:hover{background:var(--blue-dark);transform:translateY(-1px);}
+.btn-submit:disabled{opacity:.6;pointer-events:none;}
+.bottom-link{text-align:center;font-size:.82rem;color:var(--ink-muted);margin-top:18px;}
+.bottom-link a{color:var(--blue);font-weight:600;cursor:pointer;}
+.alert{padding:12px 16px;border-radius:10px;font-size:.85rem;margin-bottom:16px;display:none;}
+.alert.error{background:#FFE8EC;color:var(--red);border:1px solid rgba(255,77,106,.2);}
+.alert.success{background:var(--green-light,#E6FBF2);color:var(--green);border:1px solid rgba(0,201,122,.2);}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite;display:none;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@media(max-width:768px){.page{grid-template-columns:1fr;}.left{display:none;}.right{padding:32px 24px;}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="left">
+    <div class="left-content">
+      <div class="left-logo" onclick="location.href='/'">Quick<span>io</span></div>
+      <h2 class="left-title">Votre site pro,<br>lancé en 5 minutes.</h2>
+      <p class="left-sub">Rejoignez des centaines de professionnels qui développent leur activité avec Quickio.</p>
+      <div class="left-features">
+        <div class="feat-row"><div class="feat-check">✓</div>Création sans code — depuis votre téléphone</div>
+        <div class="feat-row"><div class="feat-check">✓</div>Modifications en temps réel, sauvegardées</div>
+        <div class="feat-row"><div class="feat-check">✓</div>Référencement Google optimisé (SEO)</div>
+        <div class="feat-row"><div class="feat-check">✓</div>Domaine personnalisé configurable</div>
+        <div class="feat-row"><div class="feat-check">✓</div>Essai gratuit · Sans carte bancaire</div>
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="auth-box">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login',this)">Connexion</button>
+        <button class="auth-tab" onclick="switchTab('signup',this)">Créer un compte</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="form-login">
+        <h2 class="auth-title">Bon retour 👋</h2>
+        <p class="auth-sub">Connectez-vous à votre espace Quickio.</p>
+        <div class="alert error" id="login-error"></div>
+        <div class="form-group">
+          <label class="form-label">Adresse email</label>
+          <input class="form-input" type="email" id="login-email" placeholder="vous@exemple.fr" autocomplete="email"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mot de passe</label>
+          <div class="input-wrap">
+            <input class="form-input" type="password" id="login-pw" placeholder="••••••••"/>
+            <span class="input-icon" onclick="togglePw('login-pw',this)">👁</span>
+          </div>
+        </div>
+        <a class="forgot-link">Mot de passe oublié ?</a>
+        <button class="btn-submit" id="btn-login" onclick="doLogin()">
+          <span>Se connecter →</span><div class="spinner" id="login-spin"></div>
+        </button>
+        <div class="bottom-link">Pas encore de compte ? <a onclick="switchTab('signup',document.querySelectorAll('.auth-tab')[1])">Créer un compte</a></div>
+      </div>
+
+      <!-- SIGNUP -->
+      <div id="form-signup" style="display:none">
+        <h2 class="auth-title">Créer mon site 🚀</h2>
+        <p class="auth-sub">Essai gratuit · Sans carte bancaire requise.</p>
+        <div class="alert error" id="signup-error"></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Prénom</label>
+            <input class="form-input" type="text" id="fname" placeholder="Jean"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nom</label>
+            <input class="form-input" type="text" id="lname" placeholder="Dupont"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" id="signup-email" placeholder="vous@exemple.fr"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mot de passe</label>
+          <div class="input-wrap">
+            <input class="form-input" type="password" id="signup-pw" placeholder="8 caractères minimum" oninput="checkPw(this.value)"/>
+            <span class="input-icon" onclick="togglePw('signup-pw',this)">👁</span>
+          </div>
+          <div class="pw-strength">
+            <div class="pw-bars"><div class="pw-bar" id="pb1"></div><div class="pw-bar" id="pb2"></div><div class="pw-bar" id="pb3"></div><div class="pw-bar" id="pb4"></div></div>
+            <div class="pw-label" id="pw-label">Entrez un mot de passe</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Votre métier</label>
+          <select class="form-input" id="metier">
+            <option value="">Sélectionnez votre activité…</option>
+            <option>Électricien</option><option>Plombier</option><option>Menuisier</option>
+            <option>Coiffeur / Esthéticien</option><option>Restaurant / Café</option>
+            <option>Médecin / Kiné / Thérapeute</option><option>Coach sportif</option>
+            <option>Freelance / Designer</option><option>Commerce de proximité</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="cgu"/>
+          <label for="cgu">J'accepte les <a href="#">Conditions d'utilisation</a> et la <a href="#">Politique de confidentialité</a>.</label>
+        </div>
+        <button class="btn-submit" id="btn-signup" onclick="doSignup()">
+          <span>Créer mon compte gratuit →</span><div class="spinner" id="signup-spin"></div>
+        </button>
+        <div class="bottom-link">Déjà un compte ? <a onclick="switchTab('login',document.querySelectorAll('.auth-tab')[0])">Se connecter</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function switchTab(mode,btn){
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('form-login').style.display=mode==='login'?'':'none';
+  document.getElementById('form-signup').style.display=mode==='signup'?'':'none';
+}
+function togglePw(id,icon){const el=document.getElementById(id);el.type=el.type==='password'?'text':'password';icon.textContent=el.type==='password'?'👁':'🙈';}
+function checkPw(val){
+  const bars=[1,2,3,4].map(i=>document.getElementById('pb'+i));
+  const label=document.getElementById('pw-label');
+  bars.forEach(b=>{b.className='pw-bar';});
+  if(!val){label.textContent='Entrez un mot de passe';return;}
+  let score=0;
+  if(val.length>=8)score++;if(/[A-Z]/.test(val))score++;if(/[0-9]/.test(val))score++;if(/[^a-zA-Z0-9]/.test(val))score++;
+  const cls=['weak','weak','medium','strong'][score-1]||'weak';
+  const labels=['Très faible','Faible','Moyen','Fort'];
+  for(let i=0;i<score;i++)bars[i].classList.add(cls);
+  label.textContent='Force : '+labels[score-1];
+  label.style.color=cls==='strong'?'var(--green)':cls==='medium'?'#FF8C42':'var(--red)';
+}
+function setLoading(btnId,spinId,loading){
+  document.getElementById(btnId).disabled=loading;
+  document.getElementById(spinId).style.display=loading?'block':'none';
+}
+function showError(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
+function hideError(id){document.getElementById(id).style.display='none';}
+
+async function doLogin(){
+  hideError('login-error');
+  const email=document.getElementById('login-email').value.trim();
+  const password=document.getElementById('login-pw').value;
+  if(!email||!password){showError('login-error','Veuillez remplir tous les champs.');return;}
+  setLoading('btn-login','login-spin',true);
+  try{
+    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const data=await r.json();
+    if(!r.ok){showError('login-error',data.error||'Erreur de connexion');return;}
+    window.location.href='/dashboard';
+  }catch(e){showError('login-error','Erreur réseau.');}
+  finally{setLoading('btn-login','login-spin',false);}
+}
+
+async function doSignup(){
+  hideError('signup-error');
+  const firstname=document.getElementById('fname').value.trim();
+  const lastname=document.getElementById('lname').value.trim();
+  const email=document.getElementById('signup-email').value.trim();
+  const password=document.getElementById('signup-pw').value;
+  const metier=document.getElementById('metier').value;
+  const cgu=document.getElementById('cgu').checked;
+  if(!firstname||!email||!password){showError('signup-error','Veuillez remplir tous les champs obligatoires.');return;}
+  if(password.length<8){showError('signup-error','Le mot de passe doit faire au moins 8 caractères.');return;}
+  if(!cgu){showError('signup-error','Veuillez accepter les conditions d\'utilisation.');return;}
+  setLoading('btn-signup','signup-spin',true);
+  try{
+    const r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstname,lastname,email,password,metier})});
+    const data=await r.json();
+    if(!r.ok){showError('signup-error',data.error||'Erreur lors de la création du compte');return;}
+    window.location.href='/editor';
+  }catch(e){showError('signup-error','Erreur réseau.');}
+  finally{setLoading('btn-signup','signup-spin',false);}
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    if(document.getElementById('form-login').style.display!=='none')doLogin();
+    else doSignup();
+  }
+});
+
+// Check if already logged in
+fetch('/api/auth/me').then(r=>{if(r.ok)window.location.href='/dashboard';}).catch(()=>{});
+</script>
+</body>
+</html>

@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Quickio — Éditeur</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--blue:#1A6BFF;--blue-dark:#0D4FCC;--blue-light:#E8F0FF;--ink:#0A0F1E;--ink-soft:#3A4260;--ink-muted:#8892A4;--surface:#F0F4FF;--white:#fff;--border:#E2E8F8;--green:#00C97A;--panel:290px;}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink);overflow:hidden;}
+h1,h2,h3{font-family:'Syne',sans-serif;}
+
+/* TOP BAR */
+.editor-top{height:56px;background:var(--ink);display:flex;align-items:center;padding:0 16px;gap:10px;z-index:100;}
+.editor-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:white;cursor:pointer;text-decoration:none;}
+.editor-logo span{color:var(--blue);}
+.top-divider{width:1px;height:22px;background:rgba(255,255,255,0.1);}
+.top-tabs{display:flex;gap:2px;}
+.top-tab{padding:6px 14px;border-radius:8px;border:none;background:none;color:rgba(255,255,255,0.5);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;cursor:pointer;transition:all .2s;}
+.top-tab:hover{color:white;background:rgba(255,255,255,.08);}
+.top-tab.active{background:rgba(255,255,255,.12);color:white;}
+.top-spacer{flex:1;}
+.dev-btns{display:flex;gap:4px;}
+.dev-btn{width:32px;height:32px;border-radius:7px;border:none;background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);cursor:pointer;font-size:.9rem;transition:all .2s;}
+.dev-btn.active,.dev-btn:hover{background:rgba(255,255,255,.15);color:white;}
+.save-status{font-size:.75rem;color:rgba(255,255,255,.4);padding:0 8px;}
+.save-status.saved{color:var(--green);}
+.save-status.saving{color:#FFB800;}
+.btn-preview{padding:.45rem 1rem;background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;cursor:pointer;transition:.2s;}
+.btn-preview:hover{background:rgba(255,255,255,.14);}
+.btn-publish{padding:.45rem 1.2rem;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:.2s;}
+.btn-publish.published{background:#00C97A;color:white;}
+.btn-publish.unpublished{background:var(--blue);color:white;}
+.btn-publish:hover{opacity:.9;}
+
+/* BODY */
+.editor-body{display:flex;height:calc(100vh - 56px);}
+
+/* PANEL */
+.left-panel{width:var(--panel);flex-shrink:0;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.panel-tabs{display:flex;border-bottom:1px solid var(--border);}
+.panel-tab{flex:1;padding:10px 4px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;color:var(--ink-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+.panel-tab.active{color:var(--blue);border-color:var(--blue);}
+.panel-body{flex:1;overflow-y:auto;padding:16px;}
+
+/* FORM ELEMENTS */
+.prop-group{margin-bottom:18px;}
+.prop-label{font-size:.75rem;font-weight:600;color:var(--ink-soft);margin-bottom:6px;display:block;}
+.prop-input{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--ink);background:var(--white);transition:border .2s;outline:none;}
+.prop-input:focus{border-color:var(--blue);}
+.prop-textarea{resize:vertical;min-height:75px;}
+.prop-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238892A4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+
+/* COLORS */
+.color-row{display:flex;gap:7px;flex-wrap:wrap;}
+.color-swatch{width:30px;height:30px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:transform .2s;}
+.color-swatch:hover{transform:scale(1.15);}
+.color-swatch.active{border-color:var(--ink);transform:scale(1.1);}
+.color-picker-wrap{display:flex;align-items:center;gap:8px;margin-top:8px;}
+.color-picker-wrap input[type=color]{width:36px;height:36px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;}
+.color-picker-wrap span{font-size:.8rem;color:var(--ink-soft);}
+
+/* TOGGLE */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;}
+.toggle-label{font-size:.85rem;color:var(--ink-soft);}
+.toggle{position:relative;width:40px;height:22px;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:#ccc;border-radius:22px;cursor:pointer;transition:.3s;}
+.toggle-slider::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s;}
+.toggle input:checked+.toggle-slider{background:var(--blue);}
+.toggle input:checked+.toggle-slider::before{transform:translateX(18px);}
+
+/* SERVICES */
+.service-item{background:var(--surface);border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid var(--border);}
+.service-item-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.service-icon-input{width:40px;text-align:center;font-size:1.2rem;border:1px solid var(--border);border-radius:7px;padding:4px;}
+.btn-add-service{width:100%;padding:8px;border:1.5px dashed var(--border);border-radius:9px;background:none;color:var(--ink-muted);cursor:pointer;font-size:.82rem;transition:all .2s;}
+.btn-add-service:hover{border-color:var(--blue);color:var(--blue);}
+.btn-remove{background:none;border:none;color:var(--ink-muted);cursor:pointer;font-size:.9rem;margin-left:auto;}
+.btn-ai{display:flex;align-items:center;gap:5px;padding:5px 10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;border-radius:7px;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-ai:hover{opacity:.85;transform:translateY(-1px);}
+.btn-ai:disabled{opacity:.5;cursor:wait;}
+.btn-ai .ai-spin{width:10px;height:10px;border:1.5px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite;display:none;}
+.btn-ai.loading .ai-spin{display:block;}
+.btn-ai.loading .ai-label{display:none;}
+.btn-img{display:flex;align-items:center;gap:5px;padding:5px 10px;background:linear-gradient(135deg,#0ea5e9,#06b6d4);color:white;border:none;border-radius:7px;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-img:hover{opacity:.85;transform:translateY(-1px);}
+.btn-img:disabled{opacity:.5;cursor:wait;}
+.btn-img .img-spin{width:10px;height:10px;border:1.5px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite;display:none;}
+.btn-img.loading .img-spin{display:block;}
+.btn-img.loading .img-label{display:none;}
+.service-img-preview{width:100%;height:110px;border-radius:9px;object-fit:cover;margin-top:8px;border:1px solid var(--border);display:none;}
+.service-img-preview.loaded{display:block;}
+.service-btns{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes fadeIn{from{opacity:0;transform:scale(.97);}to{opacity:1;transform:none;}}
+
+/* DOMAIN */
+.domain-box{background:var(--surface);border-radius:10px;padding:14px;margin-bottom:12px;border:1px solid var(--border);}
+.domain-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-muted);margin-bottom:8px;}
+.domain-url{font-size:.85rem;font-weight:600;color:var(--blue);margin-bottom:8px;word-break:break-all;}
+.domain-status{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:20px;}
+.status-ok{background:#E6FBF2;color:var(--green);}
+.status-pending{background:#FFF3E8;color:#FF8C42;}
+.status-none{background:var(--surface);color:var(--ink-muted);}
+.btn-copy{padding:5px 10px;background:var(--blue-light);color:var(--blue);border:none;border-radius:6px;font-size:.72rem;font-weight:600;cursor:pointer;margin-top:6px;}
+.dns-instructions{background:#FFFBEB;border:1px solid #FEF3C7;border-radius:10px;padding:12px;margin-top:10px;font-size:.78rem;color:#92400E;line-height:1.6;}
+.dns-instructions code{background:#FEF3C7;padding:2px 6px;border-radius:4px;font-family:monospace;}
+
+/* CANVAS */
+.canvas-wrap{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;background:var(--surface);}
+.canvas{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 8px 40px rgba(10,15,30,.12);transition:width .3s ease,max-width .3s ease;width:100%;max-width:960px;}
+.canvas.tablet{max-width:768px;}
+.canvas.mobile{max-width:390px;}
+iframe#preview{width:100%;border:none;display:block;min-height:600px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:white;padding:11px 18px;border-radius:10px;font-size:.83rem;transform:translateY(60px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:999;display:flex;align-items:center;gap:8px;}
+.toast.show{transform:none;opacity:1;}
+.toast .t-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<div class="editor-top">
+  <a class="editor-logo" href="/dashboard">Quick<span>io</span></a>
+  <div class="top-divider"></div>
+  <div class="top-tabs">
+    <button class="top-tab active" onclick="switchTab('contenu',this)">Contenu</button>
+    <button class="top-tab" onclick="switchTab('design',this)">Design</button>
+    <button class="top-tab" onclick="switchTab('seo',this)">SEO</button>
+    <button class="top-tab" onclick="switchTab('domaine',this)">Domaine</button>
+  </div>
+  <div class="top-spacer"></div>
+  <span class="save-status" id="save-status">● Chargement…</span>
+  <div class="dev-btns">
+    <button class="dev-btn active" onclick="setDevice('desktop',this)" title="Desktop">🖥️</button>
+    <button class="dev-btn" onclick="setDevice('tablet',this)" title="Tablette">📱</button>
+    <button class="dev-btn" onclick="setDevice('mobile',this)" title="Mobile">📲</button>
+  </div>
+  <div class="top-divider"></div>
+  <button class="btn-preview" onclick="openPreview()">👁 Aperçu</button>
+  <button class="btn-publish unpublished" id="btn-publish" onclick="togglePublish()">🚀 Publier</button>
+</div>
+
+<div class="editor-body">
+  <div class="left-panel">
+    <div class="panel-tabs">
+      <button class="panel-tab active" onclick="switchPanelTab('contenu',this)">Contenu</button>
+      <button class="panel-tab" onclick="switchPanelTab('design',this)">Design</button>
+      <button class="panel-tab" onclick="switchPanelTab('seo',this)">SEO</button>
+      <button class="panel-tab" onclick="switchPanelTab('domaine',this)">Domaine</button>
+    </div>
+
+    <!-- CONTENU -->
+    <div class="panel-body" id="tab-contenu">
+      <div class="prop-group">
+        <label class="prop-label">Nom / Raison sociale</label>
+        <input class="prop-input" id="c-name" placeholder="Jean Dupont" oninput="debounceSave('content')"/>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Accroche (slogan)</label>
+        <input class="prop-input" id="c-tagline" placeholder="Professionnel à votre service" oninput="debounceSave('content')"/>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Description</label>
+        <textarea class="prop-input prop-textarea" id="c-description" placeholder="Présentez votre activité…" oninput="debounceSave('content')"></textarea>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Métier / Secteur</label>
+        <input class="prop-input" id="c-metier" placeholder="Électricien, Coiffeur…" oninput="debounceSave('content')"/>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Ville</label>
+        <input class="prop-input" id="c-city" placeholder="Paris, Lyon…" oninput="debounceSave('content')"/>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Téléphone</label>
+        <input class="prop-input" id="c-phone" placeholder="06 12 34 56 78" oninput="debounceSave('content')"/>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Email de contact</label>
+        <input class="prop-input" id="c-email" type="email" placeholder="contact@monsite.fr" oninput="debounceSave('content')"/>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Texte du bouton principal</label>
+        <input class="prop-input" id="c-ctaText" placeholder="Prendre RDV" oninput="debounceSave('content')"/>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Lien du bouton (URL)</label>
+        <input class="prop-input" id="c-ctaUrl" placeholder="https://calendly.com/…" oninput="debounceSave('content')"/>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Réseaux sociaux</label>
+        <input class="prop-input" id="c-facebook" placeholder="Facebook URL" oninput="debounceSave('content')" style="margin-bottom:6px"/>
+        <input class="prop-input" id="c-instagram" placeholder="Instagram URL" oninput="debounceSave('content')" style="margin-bottom:6px"/>
+        <input class="prop-input" id="c-whatsapp" placeholder="WhatsApp URL (wa.me/…)" oninput="debounceSave('content')"/>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Services <button class="btn-add-service" onclick="addService()" style="width:auto;padding:3px 10px;margin-left:8px">+ Ajouter</button></label>
+        <div id="services-list"></div>
+      </div>
+    </div>
+
+    <!-- DESIGN -->
+    <div class="panel-body" id="tab-design" style="display:none">
+      <div class="prop-group">
+        <label class="prop-label">Couleur principale</label>
+        <div class="color-row">
+          <div class="color-swatch" style="background:#1A6BFF" data-color="#1A6BFF" onclick="setColor('#1A6BFF',this)"></div>
+          <div class="color-swatch" style="background:#00C97A" data-color="#00C97A" onclick="setColor('#00C97A',this)"></div>
+          <div class="color-swatch" style="background:#FF8C42" data-color="#FF8C42" onclick="setColor('#FF8C42',this)"></div>
+          <div class="color-swatch" style="background:#8B5CF6" data-color="#8B5CF6" onclick="setColor('#8B5CF6',this)"></div>
+          <div class="color-swatch" style="background:#EF4444" data-color="#EF4444" onclick="setColor('#EF4444',this)"></div>
+          <div class="color-swatch" style="background:#0F172A" data-color="#0F172A" onclick="setColor('#0F172A',this)"></div>
+          <div class="color-swatch" style="background:#D97706" data-color="#D97706" onclick="setColor('#D97706',this)"></div>
+          <div class="color-swatch" style="background:#C45E9B" data-color="#C45E9B" onclick="setColor('#C45E9B',this)"></div>
+        </div>
+        <div class="color-picker-wrap">
+          <input type="color" id="custom-color" value="#1A6BFF" oninput="setColor(this.value,null,true)"/>
+          <span>Couleur personnalisée</span>
+        </div>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Police de titre</label>
+        <select class="prop-input prop-select" id="d-font" onchange="debounceSave('design')">
+          <option value="Syne">Syne (Moderne)</option>
+          <option value="Georgia">Georgia (Classique)</option>
+          <option value="Courier New">Courier New (Tech)</option>
+          <option value="Arial">Arial (Neutre)</option>
+        </select>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Thème</label>
+        <select class="prop-input prop-select" id="d-theme" onchange="debounceSave('design')">
+          <option value="light">Clair (Light)</option>
+          <option value="dark">Sombre (Dark)</option>
+        </select>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Arrondi des boutons</label>
+        <input type="range" id="d-radius" min="0" max="50" value="50" oninput="document.getElementById('radius-val').textContent=this.value+'px';debounceSave('design')" style="width:100%"/>
+        <span id="radius-val" style="font-size:.75rem;color:var(--ink-muted)">50px</span>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Blocs visibles</label>
+        <div class="toggle-row">
+          <span class="toggle-label">Section Services</span>
+          <label class="toggle"><input type="checkbox" id="d-showServices" checked onchange="debounceSave('design')"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">Section Contact</span>
+          <label class="toggle"><input type="checkbox" id="d-showContact" checked onchange="debounceSave('design')"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">Réseaux sociaux</span>
+          <label class="toggle"><input type="checkbox" id="d-showReviews" checked onchange="debounceSave('design')"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEO -->
+    <div class="panel-body" id="tab-seo" style="display:none">
+      <div style="background:var(--blue-light);border-radius:10px;padding:12px;margin-bottom:16px;font-size:.8rem;color:var(--blue);line-height:1.5;">
+        💡 Ces informations sont lues par Google pour référencer votre site. Remplissez-les avec soin.
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Titre de la page (balise &lt;title&gt;)</label>
+        <input class="prop-input" id="s-title" placeholder="Jean Dupont — Électricien à Nantes" oninput="debounceSave('seo');updateSeoPreview()"/>
+        <div style="font-size:.72rem;color:var(--ink-muted);margin-top:4px"><span id="s-title-count">0</span>/60 caractères recommandés</div>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Description (balise meta description)</label>
+        <textarea class="prop-input prop-textarea" id="s-description" placeholder="Électricien certifié à Nantes. Intervention rapide 7j/7, devis gratuit. Spécialiste installation et dépannage." oninput="debounceSave('seo');updateSeoPreview()" style="min-height:90px"></textarea>
+        <div style="font-size:.72rem;color:var(--ink-muted);margin-top:4px"><span id="s-desc-count">0</span>/160 caractères recommandés</div>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Mots-clés (séparés par des virgules)</label>
+        <input class="prop-input" id="s-keywords" placeholder="électricien nantes, dépannage électrique, installation tableau" oninput="debounceSave('seo')"/>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Code de vérification Google Search Console</label>
+        <input class="prop-input" id="s-google" placeholder="google-site-verification=xxx" oninput="debounceSave('seo')"/>
+        <div style="font-size:.72rem;color:var(--ink-muted);margin-top:4px">Trouvez ce code dans <a href="https://search.google.com/search-console" target="_blank" style="color:var(--blue)">Google Search Console</a></div>
+      </div>
+      <!-- SEO Preview -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:8px;">
+        <div style="font-size:.72rem;font-weight:600;color:var(--ink-muted);margin-bottom:8px">APERÇU GOOGLE</div>
+        <div id="seo-preview-url" style="font-size:.75rem;color:#006621;margin-bottom:2px">quickio.co/votre-site</div>
+        <div id="seo-preview-title" style="font-size:1rem;color:#1a0dab;font-weight:500;margin-bottom:4px;cursor:pointer">Titre de votre page</div>
+        <div id="seo-preview-desc" style="font-size:.82rem;color:#545454;line-height:1.5">Description de votre page…</div>
+      </div>
+    </div>
+
+    <!-- DOMAINE -->
+    <div class="panel-body" id="tab-domaine" style="display:none">
+      <div class="domain-box">
+        <div class="domain-label">Adresse actuelle (sous-domaine gratuit)</div>
+        <div class="domain-url" id="current-subdomain">quickio.co/votre-site</div>
+        <button class="btn-copy" onclick="copyUrl()">📋 Copier le lien</button>
+      </div>
+      <div class="prop-group">
+        <label class="prop-label">Changer le sous-domaine</label>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:.75rem;color:var(--ink-muted);white-space:nowrap">quickio.co/</span>
+          <input class="prop-input" id="d-subdomain" placeholder="mon-nom" style="flex:1"/>
+        </div>
+        <button onclick="saveSubdomain()" style="margin-top:8px;width:100%;padding:8px;background:var(--blue);color:white;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.85rem;cursor:pointer;">Enregistrer</button>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin:16px 0;"></div>
+
+      <div class="prop-group">
+        <label class="prop-label">Domaine personnalisé</label>
+        <div style="background:var(--blue-light);border-radius:8px;padding:10px;font-size:.78rem;color:var(--blue);margin-bottom:10px;line-height:1.5;">
+          🔒 Disponible avec le plan Pro. Connectez votre propre domaine (ex: monsite.fr).
+        </div>
+        <input class="prop-input" id="d-customdomain" placeholder="www.monsite.fr" oninput="showDnsInstructions()"/>
+        <button onclick="saveCustomDomain()" style="margin-top:8px;width:100%;padding:8px;background:var(--ink);color:white;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.85rem;cursor:pointer;">Configurer →</button>
+      </div>
+      <div class="dns-instructions" id="dns-instructions" style="display:none">
+        <strong>📋 Instructions DNS</strong><br/>
+        Ajoutez ces enregistrements chez votre hébergeur :<br/><br/>
+        Type : <code>CNAME</code><br/>
+        Nom : <code>www</code><br/>
+        Valeur : <code>cname.quickio.co</code><br/><br/>
+        Type : <code>A</code><br/>
+        Nom : <code>@</code><br/>
+        Valeur : <code>76.76.21.21</code><br/><br/>
+        La propagation prend 24-48h.
+      </div>
+      <div id="domain-status-box" style="margin-top:12px;display:none">
+        <div class="domain-label">Statut du domaine personnalisé</div>
+        <span class="domain-status status-pending" id="domain-status-badge">⏳ En attente de DNS</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas-wrap">
+    <div class="canvas" id="canvas">
+      <iframe id="preview" src="/api/site/preview" title="Aperçu du site"></iframe>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="t-dot"></span><span id="toast-msg"></span></div>
+
+<script>
+let siteData = null;
+let saveTimer = null;
+
+// ── INIT ──────────────────────────────────────────────────────
+async function init() {
+  try {
+    const mr = await fetch('/api/auth/me');
+    if (!mr.ok) { window.location.href = '/auth'; return; }
+
+    const sr = await fetch('/api/site');
+    if (!sr.ok) { showToast('Erreur chargement site'); return; }
+    siteData = await sr.json();
+
+    populateForm();
+    updatePublishBtn();
+    setSaveStatus('saved');
+  } catch(e) {
+    showToast('Erreur connexion serveur: ' + e.message);
+  }
+}
+
+// ── POPULATE FORM ─────────────────────────────────────────────
+function populateForm() {
+  const c = siteData.content;
+  const d = siteData.design;
+  const s = siteData.seo;
+  const dom = siteData.domain;
+
+  setVal('c-name',        c.name);
+  setVal('c-tagline',     c.tagline);
+  setVal('c-description', c.description);
+  setVal('c-metier',      c.metier);
+  setVal('c-city',        c.city);
+  setVal('c-phone',       c.phone);
+  setVal('c-email',       c.email);
+  setVal('c-ctaText',     c.ctaText);
+  setVal('c-ctaUrl',      c.ctaUrl);
+  setVal('c-facebook',    c.socialLinks && c.socialLinks.facebook  || '');
+  setVal('c-instagram',   c.socialLinks && c.socialLinks.instagram || '');
+  setVal('c-whatsapp',    c.socialLinks && c.socialLinks.whatsapp  || '');
+
+  renderServices(c.services || []);
+
+  setVal('d-font',   d.fontFamily || 'Syne');
+  setVal('d-theme',  d.theme || 'light');
+  var radius = d.buttonRadius || 50;
+  document.getElementById('d-radius').value = radius;
+  document.getElementById('radius-val').textContent = radius + 'px';
+  document.getElementById('d-showServices').checked = d.showServices !== false;
+  document.getElementById('d-showContact').checked  = d.showContact  !== false;
+  document.getElementById('d-showReviews').checked  = d.showReviews  !== false;
+  document.getElementById('custom-color').value = d.primaryColor || '#1A6BFF';
+  document.querySelectorAll('.color-swatch').forEach(function(sw) {
+    sw.classList.toggle('active', sw.dataset.color === d.primaryColor);
+  });
+
+  setVal('s-title',       s.title);
+  setVal('s-description', s.description);
+  setVal('s-keywords',    s.keywords);
+  setVal('s-google',      s.googleVerification);
+  updateSeoPreview();
+
+  var subdomain = (dom && dom.subdomain) || siteData.slug || '';
+  document.getElementById('current-subdomain').textContent = 'localhost:3000/site/' + subdomain;
+  setVal('d-subdomain', subdomain);
+  if (dom && dom.customDomain) {
+    setVal('d-customdomain', dom.customDomain);
+    document.getElementById('domain-status-box').style.display = 'block';
+  }
+}
+
+function setVal(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.value = val || '';
+}
+function getVal(id) {
+  var el = document.getElementById(id);
+  return el ? el.value : '';
+}
+
+// ── TABS ──────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.top-tab').forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+  switchPanelTabByName(name);
+}
+function switchPanelTab(name, btn) {
+  document.querySelectorAll('.panel-tab').forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+  switchPanelTabByName(name);
+}
+function switchPanelTabByName(name) {
+  ['contenu','design','seo','domaine'].forEach(function(t) {
+    var el = document.getElementById('tab-' + t);
+    if (el) el.style.display = (t === name) ? 'block' : 'none';
+  });
+}
+function setDevice(type, btn) {
+  document.querySelectorAll('.dev-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  var c = document.getElementById('canvas');
+  c.classList.remove('tablet','mobile');
+  if (type === 'tablet') c.classList.add('tablet');
+  if (type === 'mobile')  c.classList.add('mobile');
+}
+
+// ── SERVICES ─────────────────────────────────────────────────
+function renderServices(services) {
+  var list = document.getElementById('services-list');
+  list.innerHTML = '';
+  services.forEach(function(s, i) {
+    var div = document.createElement('div');
+    div.className = 'service-item';
+    div.id = 'service-item-' + i;
+    var imgHtml = s.image
+      ? '<img class="service-img-preview loaded" id="service-img-' + i + '" src="' + s.image + '" alt="image"/>'
+      : '<img class="service-img-preview" id="service-img-' + i + '" src="" alt="image"/>';
+    var delImgBtn = s.image
+      ? '<button onclick="removeImage(' + i + ')" style="padding:5px 8px;border:1px solid var(--border);border-radius:7px;background:none;cursor:pointer;font-size:.72rem;color:var(--ink-muted)">✕ Image</button>'
+      : '';
+    div.innerHTML =
+      '<div class="service-item-header">' +
+        '<input class="service-icon-input" value="' + (s.icon||'') + '" oninput="updateService(' + i + ',\'icon\',this.value)" maxlength="2"/>' +
+        '<input class="prop-input" id="service-title-' + i + '" value="' + (s.title||'') + '" oninput="updateService(' + i + ',\'title\',this.value)" placeholder="Titre" style="flex:1"/>' +
+        '<button class="btn-remove" onclick="removeService(' + i + ')">✕</button>' +
+      '</div>' +
+      '<textarea class="prop-input prop-textarea" id="service-desc-' + i + '" oninput="updateService(' + i + ',\'desc\',this.value)" placeholder="Description…" style="min-height:55px">' + (s.desc||'') + '</textarea>' +
+      imgHtml +
+      '<div class="service-btns">' +
+        '<button class="btn-ai" id="ai-btn-' + i + '" onclick="generateDesc(' + i + ')">' +
+          '<span class="ai-label">✨ Texte IA</span>' +
+          '<div class="ai-spin"></div>' +
+        '</button>' +
+        '<button class="btn-img" id="img-btn-' + i + '" onclick="generateImage(' + i + ')">' +
+          '<span class="img-label">🎨 Image IA</span>' +
+          '<div class="img-spin"></div>' +
+        '</button>' +
+        delImgBtn +
+      '</div>';
+    list.appendChild(div);
+  });
+}
+
+function updateService(idx, field, val) {
+  if (!siteData.content.services[idx]) return;
+  siteData.content.services[idx][field] = val;
+  debounceSave('content');
+}
+function addService() {
+  if (!siteData.content.services) siteData.content.services = [];
+  siteData.content.services.push({ icon: '✨', title: 'Nouveau service', desc: '' });
+  renderServices(siteData.content.services);
+  debounceSave('content');
+}
+function removeService(idx) {
+  siteData.content.services.splice(idx, 1);
+  renderServices(siteData.content.services);
+  debounceSave('content');
+}
+function removeImage(idx) {
+  if (!siteData.content.services[idx]) return;
+  delete siteData.content.services[idx].image;
+  renderServices(siteData.content.services);
+  debounceSave('content');
+  refreshPreview();
+}
+
+// ── IA TEXTE ─────────────────────────────────────────────────
+async function generateDesc(idx) {
+  var titleEl = document.getElementById('service-title-' + idx);
+  var descEl  = document.getElementById('service-desc-'  + idx);
+  var btn     = document.getElementById('ai-btn-' + idx);
+  var title   = titleEl ? titleEl.value.trim() : '';
+  if (!title) { showToast('⚠ Donnez d\'abord un titre'); return; }
+
+  btn.classList.add('loading'); btn.disabled = true;
+  try {
+    var r = await fetch('/api/site/generate-desc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        serviceTitle: title,
+        metier: getVal('c-metier'),
+        name:   getVal('c-name')
+      })
+    });
+    var data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erreur serveur');
+    if (data.text) {
+      descEl.value = data.text;
+      updateService(idx, 'desc', data.text);
+      descEl.style.background = '#f0fdf4';
+      setTimeout(function(){ descEl.style.background = ''; }, 1200);
+      showToast('✨ Description générée !');
+    }
+  } catch(e) { showToast('❌ ' + e.message); }
+  finally { btn.classList.remove('loading'); btn.disabled = false; }
+}
+
+// ── IA IMAGE ─────────────────────────────────────────────────
+async function generateImage(idx) {
+  var titleEl = document.getElementById('service-title-' + idx);
+  var btn     = document.getElementById('img-btn-' + idx);
+  var imgEl   = document.getElementById('service-img-' + idx);
+  var title   = titleEl ? titleEl.value.trim() : '';
+  if (!title) { showToast('⚠ Donnez d\'abord un titre'); return; }
+
+  var metier = getVal('c-metier');
+  btn.classList.add('loading'); btn.disabled = true;
+  showToast('🎨 Génération image… (15-20 sec)');
+  try {
+    var r = await fetch('/api/site/service-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ serviceTitle: title, metier: metier, idx: idx })
+    });
+    var data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erreur serveur');
+    imgEl.src = data.imageUrl + '?t=' + Date.now();
+    imgEl.classList.add('loaded');
+    siteData.content.services[idx].image = data.imageUrl;
+    renderServices(siteData.content.services);
+    refreshPreview();
+    showToast('✅ Image générée !');
+  } catch(e) { showToast('❌ ' + e.message); }
+  finally { btn.classList.remove('loading'); btn.disabled = false; }
+}
+
+// ── SAVE ─────────────────────────────────────────────────────
+function debounceSave(type) {
+  setSaveStatus('saving');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){ save(type); }, 900);
+}
+
+function collectContent() {
+  return {
+    name:        getVal('c-name'),
+    tagline:     getVal('c-tagline'),
+    description: getVal('c-description'),
+    metier:      getVal('c-metier'),
+    city:        getVal('c-city'),
+    phone:       getVal('c-phone'),
+    email:       getVal('c-email'),
+    ctaText:     getVal('c-ctaText'),
+    ctaUrl:      getVal('c-ctaUrl'),
+    services:    siteData.content.services,
+    socialLinks: {
+      facebook:  getVal('c-facebook'),
+      instagram: getVal('c-instagram'),
+      whatsapp:  getVal('c-whatsapp'),
+    }
+  };
+}
+function collectDesign() {
+  return {
+    primaryColor: siteData.design.primaryColor,
+    fontFamily:   getVal('d-font'),
+    theme:        getVal('d-theme'),
+    buttonRadius: document.getElementById('d-radius').value,
+    showServices: document.getElementById('d-showServices').checked,
+    showContact:  document.getElementById('d-showContact').checked,
+    showReviews:  document.getElementById('d-showReviews').checked,
+  };
+}
+function collectSeo() {
+  return {
+    title:               getVal('s-title'),
+    description:         getVal('s-description'),
+    keywords:            getVal('s-keywords'),
+    googleVerification:  getVal('s-google'),
+  };
+}
+
+async function save(type) {
+  var payload = type === 'content' ? collectContent()
+              : type === 'design'  ? collectDesign()
+              : type === 'seo'     ? collectSeo()
+              : null;
+  if (!payload) return;
+  try {
+    var r = await fetch('/api/site/' + type, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (r.ok) {
+      var data = await r.json();
+      if (type === 'design') siteData.design = data.design;
+      if (type === 'seo')    siteData.seo    = data.seo;
+      if (type === 'content') {
+        var savedServices = data.content.services;
+        siteData.content = data.content;
+        siteData.content.services = savedServices;
+      }
+      setSaveStatus('saved');
+      refreshPreview();
+    } else { setSaveStatus('error'); }
+  } catch(e) { setSaveStatus('error'); }
+}
+
+function setSaveStatus(status) {
+  var el = document.getElementById('save-status');
+  el.className = 'save-status';
+  if (status === 'saved')  { el.textContent = '● Enregistré';     el.classList.add('saved');  }
+  if (status === 'saving') { el.textContent = '● Enregistrement…'; el.classList.add('saving'); }
+  if (status === 'error')  { el.textContent = '● Erreur';          }
+}
+
+// ── PREVIEW / PUBLISH ─────────────────────────────────────────
+function refreshPreview() {
+  var iframe = document.getElementById('preview');
+  if (iframe) iframe.src = '/api/site/preview?' + Date.now();
+}
+function openPreview() {
+  window.open('/api/site/preview', '_blank');
+}
+async function togglePublish() {
+  var r = await fetch('/api/site/publish', { method: 'POST' });
+  if (r.ok) {
+    var data = await r.json();
+    siteData.published = data.published;
+    updatePublishBtn();
+    var slug = (siteData.domain && siteData.domain.subdomain) || siteData.slug;
+    showToast(data.published ? '🚀 Publié → localhost:3000/site/' + slug : 'Site dépublié');
+  }
+}
+function updatePublishBtn() {
+  var btn = document.getElementById('btn-publish');
+  if (siteData.published) {
+    btn.textContent = '✅ Publié';
+    btn.className = 'btn-publish published';
+  } else {
+    btn.textContent = '🚀 Publier';
+    btn.className = 'btn-publish unpublished';
+  }
+}
+
+// ── DESIGN ───────────────────────────────────────────────────
+function setColor(hex, el, fromPicker) {
+  siteData.design.primaryColor = hex;
+  document.querySelectorAll('.color-swatch').forEach(function(s){ s.classList.remove('active'); });
+  if (el) el.classList.add('active');
+  if (!fromPicker) document.getElementById('custom-color').value = hex;
+  debounceSave('design');
+}
+
+// ── SEO ───────────────────────────────────────────────────────
+function updateSeoPreview() {
+  var title = getVal('s-title') || 'Titre de votre page';
+  var desc  = getVal('s-description') || 'Description…';
+  var titleEl = document.getElementById('seo-preview-title');
+  var descEl  = document.getElementById('seo-preview-desc');
+  var tc      = document.getElementById('s-title-count');
+  var dc      = document.getElementById('s-desc-count');
+  if (titleEl) titleEl.textContent = title.slice(0,60);
+  if (descEl)  descEl.textContent  = desc.slice(0,160);
+  if (tc) tc.textContent = getVal('s-title').length;
+  if (dc) dc.textContent = getVal('s-description').length;
+}
+
+// ── DOMAIN ───────────────────────────────────────────────────
+async function saveSubdomain() {
+  var sub = getVal('d-subdomain').toLowerCase().replace(/[^a-z0-9-]/g,'-');
+  var r = await fetch('/api/site/domain', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subdomain: sub })
+  });
+  var data = await r.json();
+  if (r.ok) {
+    siteData.domain = data.domain;
+    document.getElementById('current-subdomain').textContent = 'localhost:3000/site/' + sub;
+    showToast('✅ Sous-domaine mis à jour !');
+  } else { showToast('❌ ' + (data.error || 'Erreur')); }
+}
+async function saveCustomDomain() {
+  var dom = getVal('d-customdomain');
+  var r = await fetch('/api/site/domain', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ customDomain: dom })
+  });
+  var data = await r.json();
+  if (r.ok) {
+    siteData.domain = data.domain;
+    document.getElementById('domain-status-box').style.display = dom ? 'block' : 'none';
+    showToast('Configuration enregistrée');
+  }
+}
+function showDnsInstructions() {
+  var el = document.getElementById('dns-instructions');
+  if (el) el.style.display = getVal('d-customdomain') ? 'block' : 'none';
+}
+function copyUrl() {
+  var url = document.getElementById('current-subdomain').textContent;
+  navigator.clipboard.writeText('http://' + url).then(function(){ showToast('✅ Lien copié !'); });
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove('show'); }, 3500);
+}
+
+init();
+
+</script>
+</body>
+</html>

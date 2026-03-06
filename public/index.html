@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quickio — Votre site pro en 5 minutes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #1A6BFF;
+      --blue-dark: #0D4FCC;
+      --blue-light: #E8F0FF;
+      --blue-mid: #4A8FFF;
+      --ink: #0A0F1E;
+      --ink-soft: #3A4260;
+      --ink-muted: #8892A4;
+      --surface: #F7F9FF;
+      --white: #FFFFFF;
+      --border: #E2E8F8;
+      --green: #00C97A;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--white);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 { font-family: 'Syne', sans-serif; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 5%; height: 68px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem;
+      color: var(--blue); letter-spacing: -0.03em; text-decoration: none;
+    }
+    .nav-logo span { color: var(--ink); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--ink-soft); font-size: 0.9rem; font-weight: 500; transition: color .2s; }
+    .nav-links a:hover { color: var(--blue); }
+    .nav-cta {
+      display: flex; gap: 0.75rem; align-items: center;
+    }
+    .btn-ghost {
+      padding: 0.5rem 1.2rem; border: 1.5px solid var(--border); border-radius: 50px;
+      background: none; color: var(--ink-soft); font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all .2s;
+    }
+    .btn-ghost:hover { border-color: var(--blue); color: var(--blue); }
+    .btn-primary {
+      padding: 0.55rem 1.4rem; border: none; border-radius: 50px;
+      background: var(--blue); color: white; font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem; font-weight: 500; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(26,107,255,0.35); transition: all .2s;
+    }
+    .btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,107,255,0.4); }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 100px 5% 80px;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(26,107,255,0.10) 0%, transparent 70%),
+                  radial-gradient(ellipse 40% 40% at 80% 60%, rgba(74,143,255,0.07) 0%, transparent 60%),
+                  var(--white);
+      text-align: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.35rem 1rem; background: var(--blue-light); border-radius: 50px;
+      font-size: 0.8rem; font-weight: 600; color: var(--blue); margin-bottom: 1.8rem;
+      animation: fadeDown 0.6s ease both;
+    }
+    .hero-badge .dot { width: 6px; height: 6px; background: var(--blue); border-radius: 50%; animation: pulse 1.5s infinite; }
+
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: none; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    h1 {
+      font-size: clamp(2.8rem, 6vw, 5rem); font-weight: 800;
+      line-height: 1.08; letter-spacing: -0.04em;
+      color: var(--ink); max-width: 820px;
+      animation: fadeUp 0.7s 0.1s ease both;
+    }
+    h1 .accent { color: var(--blue); }
+
+    .hero-sub {
+      font-size: 1.15rem; color: var(--ink-soft); max-width: 540px;
+      margin: 1.4rem auto 0; line-height: 1.65; font-weight: 400;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+      margin-top: 2.2rem;
+      animation: fadeUp 0.7s 0.3s ease both;
+    }
+    .btn-hero {
+      padding: 0.85rem 2rem; border: none; border-radius: 50px;
+      background: var(--blue); color: white; font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      box-shadow: 0 8px 28px rgba(26,107,255,0.40); transition: all .25s;
+    }
+    .btn-hero:hover { background: var(--blue-dark); transform: translateY(-2px); box-shadow: 0 12px 36px rgba(26,107,255,0.45); }
+    .btn-hero-outline {
+      padding: 0.85rem 2rem; border: 1.5px solid var(--border); border-radius: 50px;
+      background: white; color: var(--ink); font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 500; cursor: pointer; transition: all .25s;
+    }
+    .btn-hero-outline:hover { border-color: var(--blue); color: var(--blue); }
+
+    .hero-stats {
+      display: flex; gap: 2.5rem; justify-content: center; flex-wrap: wrap;
+      margin-top: 3.5rem;
+      animation: fadeUp 0.7s 0.4s ease both;
+    }
+    .stat { text-align: center; }
+    .stat-number { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--ink); }
+    .stat-label { font-size: 0.8rem; color: var(--ink-muted); margin-top: 2px; }
+
+    /* mockup browser */
+    .hero-mockup {
+      margin-top: 4rem; width: 100%; max-width: 860px;
+      border-radius: 18px; overflow: hidden;
+      box-shadow: 0 30px 80px rgba(10,15,30,0.14), 0 0 0 1px var(--border);
+      animation: fadeUp 0.8s 0.5s ease both;
+    }
+    .mock-bar {
+      background: #F2F4F8; padding: 10px 16px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .mock-dot:nth-child(1) { background: #FF5F57; }
+    .mock-dot:nth-child(2) { background: #FFBD2E; }
+    .mock-dot:nth-child(3) { background: #28CA41; }
+    .mock-url {
+      flex: 1; background: white; border-radius: 6px; padding: 4px 12px;
+      font-size: 0.75rem; color: var(--ink-muted); max-width: 280px; margin: 0 auto;
+      border: 1px solid var(--border);
+    }
+    .mock-body {
+      background: var(--surface); padding: 28px;
+      display: grid; grid-template-columns: 1fr 1.4fr; gap: 20px;
+      min-height: 320px;
+    }
+    .mock-card {
+      background: white; border-radius: 12px; padding: 20px;
+      border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px;
+    }
+    .mock-avatar { width: 48px; height: 48px; background: var(--blue-light); border-radius: 12px; display:flex;align-items:center;justify-content:center;font-size:1.4rem; }
+    .mock-title-bar { height: 14px; background: var(--ink); border-radius: 4px; width: 70%; }
+    .mock-sub-bar { height: 10px; background: var(--border); border-radius: 4px; width: 90%; }
+    .mock-sub-bar.short { width: 60%; }
+    .mock-tag { display:inline-flex;align-items:center;gap:6px;background:var(--blue-light);color:var(--blue);padding:4px 10px;border-radius:20px;font-size:0.7rem;font-weight:600; }
+    .mock-btn { background: var(--blue); color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+    .mock-right { display:flex;flex-direction:column;gap:12px; }
+    .mock-stat-row { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+    .mock-mini-card { background:white;border:1px solid var(--border);border-radius:10px;padding:14px; }
+    .mock-mini-num { font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--ink); }
+    .mock-mini-label { font-size:0.7rem;color:var(--ink-muted);margin-top:2px; }
+    .mock-chart { background:white;border:1px solid var(--border);border-radius:10px;padding:14px; }
+    .chart-bars { display:flex;align-items:flex-end;gap:6px;height:60px;margin-top:8px; }
+    .chart-bar { flex:1;background:var(--blue-light);border-radius:4px 4px 0 0;transition:height .3s; }
+    .chart-bar.active { background:var(--blue); }
+
+    /* ── SECTION TITLES ── */
+    .section { padding: 96px 5%; }
+    .section-tag {
+      display: inline-block; background: var(--blue-light); color: var(--blue);
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 0.3rem 0.9rem; border-radius: 50px;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.1; max-width: 640px;
+    }
+    .section-sub {
+      font-size: 1.05rem; color: var(--ink-soft); max-width: 520px;
+      margin-top: 0.9rem; line-height: 1.65;
+    }
+    .text-center { text-align: center; }
+    .text-center .section-title, .text-center .section-sub { margin-left: auto; margin-right: auto; }
+
+    /* ── FEATURES GRID ── */
+    #features { background: var(--surface); }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem; margin-top: 3.5rem;
+    }
+    .feat-card {
+      background: white; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 2rem;
+      transition: all .25s; cursor: default;
+    }
+    .feat-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(26,107,255,0.10); border-color: rgba(26,107,255,0.25); }
+    .feat-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: var(--blue-light); display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 1.2rem;
+    }
+    .feat-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .feat-card p { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.6; }
+
+    /* ── HOW IT WORKS ── */
+    .steps {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2rem; margin-top: 3.5rem; position: relative;
+    }
+    .step { text-align: center; }
+    .step-num {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--blue); color: white;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.2rem;
+      box-shadow: 0 6px 20px rgba(26,107,255,0.35);
+    }
+    .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .step p { font-size: 0.875rem; color: var(--ink-soft); line-height: 1.6; }
+
+    /* ── PRICING ── */
+    #pricing { background: var(--surface); }
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem; max-width: 980px; margin: 3.5rem auto 0;
+    }
+    .price-card {
+      background: white; border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 2.2rem;
+      display: flex; flex-direction: column;
+    }
+    .price-card.featured {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(26,107,255,0.08), 0 20px 50px rgba(26,107,255,0.15);
+      position: relative; overflow: hidden;
+    }
+    .price-card.featured::before {
+      content: '⭐ Populaire'; position: absolute; top: 18px; right: -28px;
+      background: var(--blue); color: white; font-size: 0.7rem; font-weight: 700;
+      padding: 4px 40px; transform: rotate(45deg); letter-spacing: 0.05em;
+    }
+    .plan-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--ink-soft); margin-bottom: 0.5rem; }
+    .plan-price { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.8rem; letter-spacing: -0.04em; color: var(--ink); }
+    .plan-price sup { font-size: 1.2rem; vertical-align: super; }
+    .plan-price span { font-size: 0.95rem; font-weight: 400; color: var(--ink-muted); }
+    .plan-desc { font-size: 0.875rem; color: var(--ink-soft); margin: 0.6rem 0 1.4rem; }
+    .plan-divider { height: 1px; background: var(--border); margin: 1.2rem 0; }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; flex: 1; }
+    .plan-features li { font-size: 0.875rem; color: var(--ink-soft); display: flex; align-items: center; gap: 0.6rem; }
+    .plan-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+    .plan-features li.off { color: var(--ink-muted); }
+    .plan-features li.off::before { content: '–'; color: var(--ink-muted); }
+    .plan-btn {
+      margin-top: 1.8rem; padding: 0.8rem; border-radius: 50px; font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all .2s; width: 100%;
+    }
+    .plan-btn-outline { background: none; border: 1.5px solid var(--border); color: var(--ink); }
+    .plan-btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+    .plan-btn-fill { background: var(--blue); border: none; color: white; box-shadow: 0 6px 20px rgba(26,107,255,0.35); }
+    .plan-btn-fill:hover { background: var(--blue-dark); transform: translateY(-1px); }
+
+    /* ── TESTIMONIALS ── */
+    .testi-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem; margin-top: 3.5rem;
+    }
+    .testi-card {
+      background: white; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 2rem;
+      transition: all .25s;
+    }
+    .testi-card:hover { box-shadow: 0 12px 36px rgba(10,15,30,0.07); }
+    .stars { color: #FFB800; font-size: 0.95rem; margin-bottom: 1rem; letter-spacing: 2px; }
+    .testi-text { font-size: 0.925rem; color: var(--ink-soft); line-height: 1.7; font-style: italic; margin-bottom: 1.4rem; }
+    .testi-author { display: flex; align-items: center; gap: 0.8rem; }
+    .testi-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--blue-light); display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .testi-name { font-weight: 700; font-size: 0.875rem; }
+    .testi-role { font-size: 0.78rem; color: var(--ink-muted); }
+
+    /* ── FAQ ── */
+    #faq { background: var(--surface); }
+    .faq-list { max-width: 720px; margin: 3rem auto 0; display: flex; flex-direction: column; gap: 0.75rem; }
+    .faq-item { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+    .faq-q {
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+      padding: 1.1rem 1.4rem; background: none; border: none; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; color: var(--ink);
+      text-align: left;
+    }
+    .faq-q .arrow { font-size: 0.75rem; color: var(--ink-muted); transition: transform .25s; }
+    .faq-item.open .arrow { transform: rotate(180deg); }
+    .faq-a {
+      max-height: 0; overflow: hidden; transition: max-height .35s ease, padding .25s;
+      padding: 0 1.4rem; font-size: 0.9rem; color: var(--ink-soft); line-height: 1.7;
+    }
+    .faq-item.open .faq-a { max-height: 200px; padding-bottom: 1.2rem; }
+
+    /* ── CTA BANNER ── */
+    #cta {
+      padding: 80px 5%; text-align: center;
+      background: linear-gradient(135deg, #1A6BFF 0%, #0D4FCC 100%);
+      color: white;
+    }
+    #cta h2 { font-size: clamp(2rem, 3vw, 2.6rem); font-weight: 800; letter-spacing: -0.03em; }
+    #cta p { font-size: 1.05rem; opacity: 0.85; margin: 1rem auto; max-width: 440px; }
+    .btn-white {
+      margin-top: 1.5rem; padding: 0.9rem 2.2rem; border: none; border-radius: 50px;
+      background: white; color: var(--blue); font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2); transition: all .25s;
+    }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.25); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--ink); color: rgba(255,255,255,0.55);
+      padding: 56px 5% 32px;
+    }
+    .footer-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
+    .footer-brand .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem; color: white; margin-bottom: 0.8rem; }
+    .footer-brand p { font-size: 0.85rem; line-height: 1.6; max-width: 220px; }
+    .footer-col h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; color: rgba(255,255,255,0.85); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .footer-col ul li a { text-decoration: none; color: rgba(255,255,255,0.5); font-size: 0.875rem; transition: color .2s; }
+    .footer-col ul li a:hover { color: white; }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.5rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; font-size: 0.8rem; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .mock-body { grid-template-columns: 1fr; }
+      .mock-right { display: none; }
+      .hero-stats { gap: 1.5rem; }
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .65s ease, transform .65s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">Quick<span>io</span></a>
+  <ul class="nav-links">
+    <li><a href="#features">Fonctionnalités</a></li>
+    <li><a href="#how">Comment ça marche</a></li>
+    <li><a href="#pricing">Tarifs</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="nav-cta">
+    <button class="btn-ghost" onclick="window.location='/auth'">Connexion</button>
+    <button class="btn-primary" onclick="window.location='/auth'">Essai gratuit →</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-badge"><span class="dot"></span> Nouveau · Paiement intégré sans frais</div>
+  <h1>Votre site pro <span class="accent">en 5 minutes.</span><br>Zéro compétence requise.</h1>
+  <p class="hero-sub">Quickio est la plateforme tout-en-un pour créer un site professionnel, encaisser vos clients et être visible sur Google — depuis votre téléphone.</p>
+  <div class="hero-actions">
+    <button class="btn-hero"><a href="/auth" style="color:white;text-decoration:none">Créer mon site gratuitement</a></button>
+    <button class="btn-hero-outline">Voir une démo →</button>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-number">+4 800</div><div class="stat-label">Sites créés</div></div>
+    <div class="stat"><div class="stat-number">5 min</div><div class="stat-label">Temps de création</div></div>
+    <div class="stat"><div class="stat-number">0€</div><div class="stat-label">Commission sur paiements</div></div>
+    <div class="stat"><div class="stat-number">4.9 ★</div><div class="stat-label">Note moyenne</div></div>
+  </div>
+
+  <!-- Mockup -->
+  <div class="hero-mockup">
+    <div class="mock-bar">
+      <div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div>
+      <div class="mock-url">quickio.co/votre-nom</div>
+    </div>
+    <div class="mock-body">
+      <div class="mock-card">
+        <div class="mock-avatar">🔧</div>
+        <div class="mock-title-bar"></div>
+        <div class="mock-sub-bar"></div>
+        <div class="mock-sub-bar short"></div>
+        <div><span class="mock-tag">⭐ 4.9 · 127 avis Google</span></div>
+        <button class="mock-btn">Prendre RDV →</button>
+      </div>
+      <div class="mock-right">
+        <div class="mock-stat-row">
+          <div class="mock-mini-card"><div class="mock-mini-num">12</div><div class="mock-mini-label">RDV ce mois</div></div>
+          <div class="mock-mini-card"><div class="mock-mini-num" style="color:var(--green)">+3.8k€</div><div class="mock-mini-label">Encaissé</div></div>
+        </div>
+        <div class="mock-chart">
+          <div style="font-size:0.7rem;font-weight:600;color:var(--ink-soft)">Visites · 7 jours</div>
+          <div class="chart-bars">
+            <div class="chart-bar" style="height:35%"></div>
+            <div class="chart-bar" style="height:55%"></div>
+            <div class="chart-bar" style="height:45%"></div>
+            <div class="chart-bar" style="height:80%"></div>
+            <div class="chart-bar active" style="height:70%"></div>
+            <div class="chart-bar" style="height:90%"></div>
+            <div class="chart-bar active" style="height:100%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="section">
+  <div class="reveal text-center">
+    <div class="section-tag">Fonctionnalités</div>
+    <h2 class="section-title">Tout ce dont vous avez besoin. Rien de superflu.</h2>
+    <p class="section-sub">Quickio concentre en une seule plateforme tout ce qu'un professionnel ou un commerce doit avoir en ligne.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feat-card reveal">
+      <div class="feat-icon">⚡</div>
+      <h3>Création ultra-rapide</h3>
+      <p>Choisissez un template, renseignez vos infos, publiez. Votre site est en ligne en moins de 5 minutes, sans coder une ligne.</p>
+    </div>
+    <div class="feat-card reveal">
+      <div class="feat-icon">💳</div>
+      <h3>Paiement en ligne intégré</h3>
+      <p>Encaissez vos clients directement depuis votre site. Zéro commission Quickio. Virement instantané sur votre compte bancaire.</p>
+    </div>
+    <div class="feat-card reveal">
+      <div class="feat-icon">🔍</div>
+      <h3>Référencement Google</h3>
+      <p>Vos avis Google sont intégrés nativement. Votre fiche locale est optimisée automatiquement pour apparaître en tête des recherches.</p>
+    </div>
+    <div class="feat-card reveal">
+      <div class="feat-icon">📅</div>
+      <h3>Prise de RDV en ligne</h3>
+      <p>Connectez Calendly ou notre agenda intégré. Vos clients réservent 24h/24 sans vous déranger. Rappels automatiques inclus.</p>
+    </div>
+    <div class="feat-card reveal">
+      <div class="feat-icon">📱</div>
+      <h3>100% mobile</h3>
+      <p>Gérez votre site depuis votre smartphone. Modifiez un prix, une photo ou un horaire en 30 secondes, partout.</p>
+    </div>
+    <div class="feat-card reveal">
+      <div class="feat-icon">📊</div>
+      <h3>Statistiques en temps réel</h3>
+      <p>Visites, clics, conversions, revenus. Suivez la performance de votre site depuis un tableau de bord clair et lisible.</p>
+    </div>
+    <div class="feat-card reveal">
+      <div class="feat-icon">🎁</div>
+      <h3>Carte de fidélité numérique</h3>
+      <p>Offrez une carte de fidélité digitale à vos clients. Ils ne la perdent plus, vous fidélisez sans effort.</p>
+    </div>
+    <div class="feat-card reveal">
+      <div class="feat-icon">📲</div>
+      <h3>QR Code intelligent</h3>
+      <p>Un QR Code unique sur votre vitrine, camion ou carte de visite. Vos clients accèdent à tout : menu, RDV, avis, paiement.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="section">
+  <div class="reveal text-center">
+    <div class="section-tag">Comment ça marche</div>
+    <h2 class="section-title">3 étapes. C'est tout.</h2>
+    <p class="section-sub">Pas de formation, pas de technique. Si vous savez utiliser Instagram, vous savez créer un site Quickio.</p>
+  </div>
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-num">1</div>
+      <h3>Choisissez votre template</h3>
+      <p>Sélectionnez parmi nos dizaines de templates professionnels conçus pour votre secteur d'activité.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">2</div>
+      <h3>Personnalisez en quelques clics</h3>
+      <p>Ajoutez vos photos, textes, services et tarifs. Notre éditeur visuel est aussi simple qu'un réseau social.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">3</div>
+      <h3>Publiez et soyez visible</h3>
+      <p>En un clic, votre site est en ligne. Partagez-le, imprimez votre QR Code, et recevez vos premiers clients.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="section">
+  <div class="reveal text-center">
+    <div class="section-tag">Tarifs</div>
+    <h2 class="section-title">Simple, transparent, sans surprise.</h2>
+    <p class="section-sub">Commencez gratuitement. Passez au Pro quand vous êtes prêt. Sans engagement, résiliable à tout moment.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card reveal">
+      <div class="plan-name">GRATUIT</div>
+      <div class="plan-price"><sup>€</sup>0<span> / mois</span></div>
+      <div class="plan-desc">Pour tester et vous lancer sans risque.</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>1 page site vitrine</li>
+        <li>Sous-domaine quickio.co</li>
+        <li>QR Code inclus</li>
+        <li class="off">Paiement en ligne</li>
+        <li class="off">Prise de RDV</li>
+        <li class="off">Statistiques avancées</li>
+        <li class="off">Domaine personnalisé</li>
+      </ul>
+      <button class="plan-btn plan-btn-outline">Commencer gratuitement</button>
+    </div>
+    <div class="price-card featured reveal">
+      <div class="plan-name">PRO</div>
+      <div class="plan-price"><sup>€</sup>19<span>,99 / mois</span></div>
+      <div class="plan-desc">Tout ce qu'il faut pour développer votre activité.</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>Site multi-pages illimité</li>
+        <li>Domaine personnalisé inclus</li>
+        <li>QR Code intelligent</li>
+        <li>Paiement en ligne (0% commission)</li>
+        <li>Prise de RDV en ligne</li>
+        <li>Statistiques avancées</li>
+        <li>Avis Google intégrés</li>
+        <li>Support prioritaire</li>
+      </ul>
+      <button class="plan-btn plan-btn-fill">Démarrer l'essai gratuit →</button>
+    </div>
+    <div class="price-card reveal">
+      <div class="plan-name">BUSINESS</div>
+      <div class="plan-price"><sup>€</sup>49<span> / mois</span></div>
+      <div class="plan-desc">Pour les commerces et équipes en croissance.</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>Tout du plan Pro</li>
+        <li>Carte de fidélité numérique</li>
+        <li>SMS marketing clients</li>
+        <li>Catalogue produits / menu</li>
+        <li>Multi-utilisateurs (3 comptes)</li>
+        <li>Intégration CRM</li>
+        <li>Accompagnement onboarding</li>
+      </ul>
+      <button class="plan-btn plan-btn-outline">Choisir Business</button>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testi" class="section">
+  <div class="reveal text-center">
+    <div class="section-tag">Témoignages</div>
+    <h2 class="section-title">Ils ont sauté le pas. Ils ne regrettent pas.</h2>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card reveal">
+      <div class="stars">★★★★★</div>
+      <p class="testi-text">"Mon site était sur WordPress, impossible à modifier. Avec Quickio, je change mes horaires en 30 secondes depuis mon téléphone. Mes clients adorent !"</p>
+      <div class="testi-author">
+        <div class="testi-avatar">👨‍🍳</div>
+        <div><div class="testi-name">Thomas D.</div><div class="testi-role">Gérant de restaurant, Lyon</div></div>
+      </div>
+    </div>
+    <div class="testi-card reveal">
+      <div class="stars">★★★★★</div>
+      <p class="testi-text">"Le système de prise de RDV en ligne m'a changé la vie. Je ne réponds plus à 20 appels par jour. Mes clients réservent eux-mêmes et reçoivent un rappel automatique."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">💇</div>
+        <div><div class="testi-name">Sarah L.</div><div class="testi-role">Coiffeuse indépendante, Bordeaux</div></div>
+      </div>
+    </div>
+    <div class="testi-card reveal">
+      <div class="stars">★★★★★</div>
+      <p class="testi-text">"Je ne voulais pas payer 1500€ pour un site vitrine. Quickio fait tout ce dont j'ai besoin. Le QR code sur mon camion m'apporte des appels tous les jours."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">🔌</div>
+        <div><div class="testi-name">Marc B.</div><div class="testi-role">Électricien, Nantes</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="section">
+  <div class="reveal text-center">
+    <div class="section-tag">FAQ</div>
+    <h2 class="section-title">Vos questions, nos réponses.</h2>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-q">Puis-je essayer gratuitement ? <span class="arrow">▼</span></button>
+      <div class="faq-a">Oui, sans carte bancaire. L'essai gratuit vous donne accès à l'éditeur complet. Votre site reste en mode privé jusqu'à l'activation d'un abonnement payant.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Ai-je besoin de compétences techniques ? <span class="arrow">▼</span></button>
+      <div class="faq-a">Aucune. Quickio est conçu pour être aussi simple qu'un réseau social. Si vous savez poster une photo sur Instagram, vous savez créer votre site.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Puis-je utiliser mon propre nom de domaine ? <span class="arrow">▼</span></button>
+      <div class="faq-a">Oui, dès le plan Pro. Connectez votre domaine existant ou achetez-en un directement depuis Quickio. La configuration est automatique et prend moins de 2 minutes.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Comment fonctionne le paiement en ligne ? <span class="arrow">▼</span></button>
+      <div class="faq-a">Quickio intègre Stripe pour les paiements par carte et les virements instantanés. Aucune commission Quickio — seuls les frais bancaires standards s'appliquent (environ 1,4% + 0,25€).</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Puis-je modifier mon site à tout moment ? <span class="arrow">▼</span></button>
+      <div class="faq-a">Oui, en illimité et instantanément. Modifiez un prix, une photo ou un texte depuis votre téléphone — les changements sont en ligne en quelques secondes.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">L'abonnement est-il sans engagement ? <span class="arrow">▼</span></button>
+      <div class="faq-a">Totalement. Vous pouvez résilier à tout moment depuis votre tableau de bord. La résiliation prend effet à la fin de la période en cours, sans frais.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="reveal">
+    <h2>Prêt à lancer votre site ?</h2>
+    <p>Rejoignez plus de 4 800 professionnels qui ont choisi Quickio pour développer leur activité en ligne.</p>
+    <button class="btn-white"><a href="/auth" style="color:white;text-decoration:none">Créer mon site gratuitement</a> →</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">Quickio</div>
+      <p>La plateforme tout-en-un pour créer votre site, encaisser vos clients et être visible sur Google.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Produit</h4>
+      <ul>
+        <li><a href="#">Fonctionnalités</a></li>
+        <li><a href="pages/templates.html">Templates</a></li>
+        <li><a href="#">Tarifs</a></li>
+        <li><a href="#">Nouveautés</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Ressources</h4>
+      <ul>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Tutoriels</a></li>
+        <li><a href="#">Support</a></li>
+        <li><a href="#">Affiliation</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Légal</h4>
+      <ul>
+        <li><a href="#">Mentions légales</a></li>
+        <li><a href="#">CGV</a></li>
+        <li><a href="#">Confidentialité</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Quickio. Tous droits réservés.</span>
+    <span>Fait avec ❤️ en France</span>
+  </div>
+</footer>
+
+<script>
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.parentElement;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
