@@ -358,6 +358,7 @@ iframe#preview{width:100%;border:none;display:block;min-height:600px;}
       <div style="height:1px;background:var(--border);margin:12px 0;"></div>
       <div class="prop-group">
         <label class="prop-label">Villes ajoutees</label>
+        <button onclick="generateAll()" id="btn-generate-all" style="margin-bottom:8px;width:100%;padding:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;border-radius:9px;font-family:DM Sans,sans-serif;font-weight:600;font-size:.82rem;cursor:pointer;">✨ Generer tout le contenu IA</button>
         <div id="cities-list" style="margin-top:8px;"><p style="color:var(--ink-muted);font-size:.8rem;">Aucune ville ajoutee</p></div>
       </div>
     </div>
@@ -789,6 +790,7 @@ async function generateCity(slug){showToast("Generation IA en cours...");try{var
 async function deleteCity(slug){if(!confirm("Supprimer cette ville ?"))return;try{var r=await fetch("/api/seo-local/cities/"+slug,{method:"DELETE"});var data=await r.json();if(data.success){loadCities();showToast("Ville supprimee");}else{showToast(data.error);}}catch(e){showToast("Erreur serveur");}}
 var radiusSearchTimeout=null;
 async function addByRadius(){var cityName=document.getElementById("radius-city").value;var km=document.getElementById("radius-km").value||30;if(!cityName||cityName.length<2){showToast("Entrez une ville centre");return;}try{var gr=await fetch("/api/geo/search?q="+encodeURIComponent(cityName));var gdata=await gr.json();if(!gdata.success||!gdata.cities.length){showToast("Ville introuvable");return;}var center=gdata.cities[0];if(!center.lat||!center.lng){showToast("Coordonnees introuvables");return;}var r=await fetch("/api/seo-local/cities/radius",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lat:center.lat,lng:center.lng,radius:km})});var data=await r.json();if(data.success){loadCities();showToast(data.added+" villes ajoutees, "+data.skipped+" ignorees");}else{showToast(data.error);}}catch(e){showToast("Erreur serveur");}}
+async function generateAll(){var btn=document.getElementById("btn-generate-all");btn.disabled=true;btn.textContent="Generation en cours...";try{var r=await fetch("/api/seo-local/cities");var data=await r.json();if(!data.success){showToast(data.error);btn.disabled=false;btn.textContent="✨ Generer tout le contenu IA";return;}var pending=data.cities.filter(function(c){return !c.is_generated;});if(pending.length===0){showToast("Toutes les villes sont deja generees");btn.disabled=false;btn.textContent="✨ Generer tout le contenu IA";return;}for(var i=0;i<pending.length;i++){btn.textContent="Generation "+(i+1)+"/"+pending.length+"...";try{await fetch("/api/seo-local/cities/"+pending[i].city_slug+"/generate",{method:"POST"});}catch(e){console.error(e);}await new Promise(function(resolve){setTimeout(resolve,1500);});}loadCities();showToast(pending.length+" pages generees !");}catch(e){showToast("Erreur serveur");}btn.disabled=false;btn.textContent="✨ Generer tout le contenu IA";}
 setTimeout(function(){loadCities();},1000);
 </script>
 </body>
