@@ -118,6 +118,45 @@ iframe#preview{width:100%;border:none;display:block;min-height:600px;}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:white;padding:11px 18px;border-radius:10px;font-size:.83rem;transform:translateY(60px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:999;display:flex;align-items:center;gap:8px;}
 .toast.show{transform:none;opacity:1;}
 .toast .t-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .editor-top { flex-wrap: wrap; height: auto; padding: 8px 12px; gap: 6px; }
+  .editor-logo { font-size: .95rem; }
+  .top-tabs { order: 10; width: 100%; overflow-x: auto; gap: 1px; padding-bottom: 4px; }
+  .top-tab { padding: 5px 10px; font-size: .72rem; white-space: nowrap; }
+  .top-spacer { display: none; }
+  .dev-btns { display: none; }
+  .save-status { font-size: .68rem; padding: 0 4px; }
+  .btn-preview { padding: .35rem .7rem; font-size: .75rem; }
+  .btn-publish { padding: .35rem .8rem; font-size: .75rem; }
+  .top-divider { display: none; }
+  .editor-body { flex-direction: column; height: auto; min-height: calc(100vh - 90px); }
+  .left-panel { width: 100%; max-height: 50vh; border-right: none; border-bottom: 1px solid var(--border); }
+  .panel-tabs { overflow-x: auto; }
+  .panel-tab { font-size: .68rem; padding: 8px 6px; white-space: nowrap; }
+  .panel-body { padding: 12px; }
+  .canvas-wrap { padding: 10px; min-height: 400px; }
+  .canvas { border-radius: 10px; }
+  iframe#preview { min-height: 400px; }
+  .prop-input { padding: 8px 10px; font-size: .82rem; }
+  .prop-textarea { min-height: 60px; }
+  .service-item { padding: 10px; }
+  .service-item-header { flex-wrap: wrap; }
+  .service-icon-input { width: 36px; font-size: 1rem; }
+  .service-btns { flex-wrap: wrap; }
+  .btn-ai, .btn-img { font-size: .68rem; padding: 4px 8px; }
+  .domain-box { padding: 12px; }
+  .dns-instructions { padding: 10px; font-size: .72rem; }
+  .color-row { gap: 5px; }
+  .color-swatch { width: 26px; height: 26px; }
+}
+@media (max-width: 480px) {
+  .editor-top { padding: 6px 8px; }
+  .left-panel { max-height: 45vh; }
+  .canvas-wrap { padding: 6px; }
+  .panel-body { padding: 10px; }
+}
 </style>
 </head>
 <body>

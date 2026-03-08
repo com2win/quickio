@@ -99,6 +99,42 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif;}
 /* TOAST */
 .toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:white;padding:11px 18px;border-radius:10px;font-size:.83rem;transform:translateY(60px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:999;}
 .toast.show{transform:none;opacity:1;}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; flex-direction: row; align-items: center; overflow-x: auto; overflow-y: hidden; height: auto; min-height: 56px; padding: 0; }
+  .sidebar-logo { padding: 14px 16px; font-size: 1.1rem; border-bottom: none; border-right: 1px solid rgba(255,255,255,.07); white-space: nowrap; }
+  .sidebar-section { display: none; }
+  .sidebar-footer { display: none; }
+  .nav-item { margin: 4px 2px; padding: 8px 12px; font-size: .78rem; white-space: nowrap; gap: 6px; }
+  .nav-item .icon { font-size: .85rem; }
+  .main { height: calc(100vh - 56px); }
+  .topbar { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+  .topbar-title { font-size: .95rem; }
+  .content { padding: 16px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { padding: 14px; }
+  .stat-val { font-size: 1.3rem; }
+  .stat-label { font-size: .7rem; }
+  .stat-icon { width: 32px; height: 32px; font-size: .85rem; }
+  .grid-2 { grid-template-columns: 1fr; gap: 12px; }
+  .grid-3 { grid-template-columns: 1fr; gap: 12px; }
+  .card { padding: 14px; }
+  .chart-area { height: 100px; }
+  .site-info-grid { grid-template-columns: 1fr; gap: 8px; }
+  .actions-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .status-bar { flex-direction: column; align-items: flex-start; gap: 8px; font-size: .78rem; }
+  .status-actions { width: 100%; }
+  .status-link-btn { flex: 1; text-align: center; }
+}
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-val { font-size: 1.1rem; }
+  .topbar { padding: 10px 12px; }
+  .content { padding: 12px; }
+  .btn-blue { padding: .4rem .9rem; font-size: .8rem; }
+}
 </style>
 </head>
 <body>
