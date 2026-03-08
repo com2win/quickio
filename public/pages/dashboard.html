@@ -240,7 +240,7 @@ function updateUI() {
   const c = siteData.content;
   const d = siteData.design;
   const subdomain = siteData.domain?.subdomain || siteData.slug;
-  const siteUrl = `http://localhost:3000/site/${subdomain}`;
+  const siteUrl = `https://${subdomain}.quickio.fr`;
 
   // Status bar
   const bar = document.getElementById('status-bar');
@@ -265,7 +265,7 @@ function updateUI() {
   // Info
   document.getElementById('info-name').textContent = c.name || '—';
   document.getElementById('info-metier').textContent = c.metier || '—';
-  document.getElementById('info-url').textContent = `localhost:3000/site/${subdomain}`;
+  document.getElementById('info-url').textContent = `${subdomain}.quickio.fr`;
 
   const publishBtn = document.getElementById('publish-btn');
   if (siteData.published) {
@@ -325,20 +325,20 @@ async function togglePublish() {
     siteData.published = data.published;
     updateUI();
     const subdomain = siteData.domain?.subdomain || siteData.slug;
-    showToast(data.published ? `🚀 Site publié ! → localhost:3000/site/${subdomain}` : 'Site dépublié');
+    showToast(data.published ? `🚀 Site publié ! → ${subdomain}.quickio.fr` : 'Site dépublié');
   }
 }
 
 function copyLink() {
   const subdomain = siteData?.domain?.subdomain || siteData?.slug;
   if (!subdomain) return;
-  navigator.clipboard.writeText(`http://localhost:3000/site/${subdomain}`)
+  navigator.clipboard.writeText(`https://${subdomain}.quickio.fr`)
     .then(() => showToast('✅ Lien copié dans le presse-papiers !'));
 }
 
 function openSite() {
   const subdomain = siteData?.domain?.subdomain || siteData?.slug;
-  if (subdomain && siteData?.published) window.open(`/site/${subdomain}`, '_blank');
+  if (subdomain && siteData?.published) window.open(`https://${subdomain}.quickio.fr`, '_blank');
   else showToast('Publiez d\'abord votre site !');
 }
 

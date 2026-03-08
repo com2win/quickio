@@ -435,7 +435,7 @@ function populateForm() {
   updateSeoPreview();
 
   var subdomain = (dom && dom.subdomain) || siteData.slug || '';
-  document.getElementById('current-subdomain').textContent = 'localhost:3000/site/' + subdomain;
+  document.getElementById('current-subdomain').textContent = '' + subdomain + '.quickio.fr';
   setVal('d-subdomain', subdomain);
   if (dom && dom.customDomain) {
     setVal('d-customdomain', dom.customDomain);
@@ -696,7 +696,7 @@ async function togglePublish() {
     siteData.published = data.published;
     updatePublishBtn();
     var slug = (siteData.domain && siteData.domain.subdomain) || siteData.slug;
-    showToast(data.published ? '🚀 Publié → localhost:3000/site/' + slug : 'Site dépublié');
+    showToast(data.published ? '🚀 Publié → ' + slug + '.quickio.fr' : 'Site dépublié');
   }
 }
 function updatePublishBtn() {
@@ -744,7 +744,7 @@ async function saveSubdomain() {
   var data = await r.json();
   if (r.ok) {
     siteData.domain = data.domain;
-    document.getElementById('current-subdomain').textContent = 'localhost:3000/site/' + sub;
+    document.getElementById('current-subdomain').textContent = '' + sub + '.quickio.fr';
     showToast('✅ Sous-domaine mis à jour !');
   } else { showToast('❌ ' + (data.error || 'Erreur')); }
 }
