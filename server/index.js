@@ -52,4 +52,252 @@ app.post("/api/seo-local/cities", requireAuth, async function(req, res) { try { 
 app.delete("/api/seo-local/cities/:slug", requireAuth, async function(req, res) { try { var w=await queryOne("SELECT id FROM websites WHERE professional_id=$1",[req.session.professionalId]); if (!w) return res.status(404).json({error:"Site introuvable"}); var deleted=await queryOne("DELETE FROM local_seo_pages WHERE website_id=$1 AND city_slug=$2 RETURNING id",[w.id,req.params.slug]); if (!deleted) return res.status(404).json({error:"Ville introuvable"}); res.json({success:true,message:"Ville supprimee"}); } catch(err) { res.status(500).json({error:"Erreur serveur"}); } });
 app.post("/api/seo-local/cities/:slug/generate", requireAuth, async function(req, res) { try { var w=await queryOne("SELECT w.*,p.trade FROM websites w JOIN professionals p ON p.id=w.professional_id WHERE w.professional_id=$1",[req.session.professionalId]); if (!w) return res.status(404).json({error:"Site introuvable"}); var city=await queryOne("SELECT * FROM local_seo_pages WHERE website_id=$1 AND city_slug=$2",[w.id,req.params.slug]); if (!city) return res.status(404).json({error:"Ville introuvable"}); var GROQ_KEY=process.env.GROQ_API_KEY; if (!GROQ_KEY) return res.status(500).json({error:"Cle API IA non configuree"}); var prompt="Tu es un expert SEO local francais. Genere du contenu unique et optimise pour un(e) "+(w.trade||"professionnel(le)")+" nomme(e) \""+w.business_name+"\" dans la ville de "+city.city_name+(city.department?" ("+city.department+")":"")+ ". Reponds UNIQUEMENT en JSON valide avec les cles: seo_title, h1_heading, intro_paragraph, full_content. Le contenu doit faire 200-400 mots, mentionner la ville 3-5 fois naturellement, et etre optimise pour le referencement local."; var r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+GROQ_KEY},body:JSON.stringify({model:"llama-3.3-70b-versatile",messages:[{role:"user",content:prompt}],max_tokens:1024,temperature:0.7})}); var data=await r.json(); if (!data.choices||!data.choices[0]) return res.status(500).json({error:"Erreur IA"}); var text=data.choices[0].message.content; var parsed; try { var clean=text.replace(/```json\n?/g,"").replace(/```\n?/g,"").trim(); parsed=JSON.parse(clean); } catch(e) { parsed={seo_title:(w.trade||"Professionnel")+" a "+city.city_name,h1_heading:"Votre "+(w.trade||"professionnel")+" a "+city.city_name,intro_paragraph:text.substring(0,300),full_content:text}; } var updated=await queryOne("UPDATE local_seo_pages SET seo_title=$1,h1_heading=$2,intro_paragraph=$3,full_content=$4,is_generated=true WHERE id=$5 RETURNING *",[parsed.seo_title,parsed.h1_heading,parsed.intro_paragraph,parsed.full_content,city.id]); res.json({success:true,city:updated}); } catch(err) { console.error(err); res.status(500).json({error:"Erreur generation SEO"}); } });
 app.post("/api/seo-local/cities/radius", requireAuth, async function(req, res) { try { var pro=await queryOne("SELECT plan FROM professionals WHERE id=$1",[req.session.professionalId]); if (pro.plan==="gratuit") return res.status(403).json({error:"Fonctionnalite reservee au plan Pro",upgrade:true}); var w=await queryOne("SELECT id FROM websites WHERE professional_id=$1",[req.session.professionalId]); if (!w) return res.status(404).json({error:"Creez d abord un site"}); var b=req.body; if (!b.lat||!b.lng) return res.status(400).json({error:"Coordonnees requises"}); var km=parseInt(b.radius)||30; function dist(lat1,lon1,lat2,lon2){var R=6371;var dLat=(lat2-lat1)*Math.PI/180;var dLon=(lon2-lon1)*Math.PI/180;var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));} var allCities=[]; var deptR=await fetch("https://geo.api.gouv.fr/communes?lat="+b.lat+"&lon="+b.lng+"&fields=nom,code,codesPostaux,departement,region,centre&limit=5"); var nearby=await deptR.json(); var deptCode=nearby[0]&&nearby[0].departement&&nearby[0].departement.code; if(deptCode){var dr=await fetch("https://geo.api.gouv.fr/departements/"+deptCode+"/communes?fields=nom,code,codesPostaux,departement,region,centre&limit=500"); allCities=await dr.json();} var adjacentDepts=[]; for(var n=0;n<nearby.length;n++){var nd=nearby[n]&&nearby[n].departement&&nearby[n].departement.code; if(nd&&nd!==deptCode&&adjacentDepts.indexOf(nd)===-1)adjacentDepts.push(nd);} for(var d=0;d<adjacentDepts.length;d++){try{var adr=await fetch("https://geo.api.gouv.fr/departements/"+adjacentDepts[d]+"/communes?fields=nom,code,codesPostaux,departement,region,centre&limit=500"); var ac=await adr.json(); allCities=allCities.concat(ac);}catch(e){}} var added=0;var skipped=0; for(var i=0;i<allCities.length;i++){var c=allCities[i]; var cLat=c.centre&&c.centre.coordinates&&c.centre.coordinates[1]; var cLng=c.centre&&c.centre.coordinates&&c.centre.coordinates[0]; if(!cLat||!cLng)continue; var d2=dist(parseFloat(b.lat),parseFloat(b.lng),cLat,cLng); if(d2>km)continue; var citySlug=c.nom.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""); var existing=await queryOne("SELECT id FROM local_seo_pages WHERE website_id=$1 AND city_slug=$2",[w.id,citySlug]); if(existing){skipped++;continue;} if(pro.plan==="pro"){var count=await queryOne("SELECT COUNT(*)::int AS total FROM local_seo_pages WHERE website_id=$1",[w.id]); if(count.total>=50)break;} await queryOne("INSERT INTO local_seo_pages (website_id,city_name,city_slug,postal_code,department,region,lat,lng) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)",[w.id,c.nom,citySlug,(c.codesPostaux&&c.codesPostaux[0])||null,(c.departement&&c.departement.nom)||null,(c.region&&c.region.nom)||null,cLat,cLng]); added++;} res.json({success:true,added:added,skipped:skipped}); } catch(err) { console.error(err); res.status(500).json({error:"Erreur serveur"}); } });
+
+/* QUICKIO_PATCH_V1 */
+/* ================================================================
+   NOUVELLES ROUTES — ajoutées par patch-quickio.js
+   - FAQ IA Groq avec cache 30j + liens externes vérifiés
+   - Marques / prestataires
+   - Carte OSM (géocodage Nominatim)
+   - Avis Google Places + horaires
+   - Upload logo pro
+   - Contact leads
+================================================================ */
+
+const https_mod = require('https');
+const http_mod  = require('http');
+const multer    = require('multer');
+const UPLOADS_DIR_LOGO = path.join(__dirname, '..', 'public', 'uploads', 'logos');
+if (!fs.existsSync(UPLOADS_DIR_LOGO)) fs.mkdirSync(UPLOADS_DIR_LOGO, { recursive: true });
+
+// ── Helpers ──────────────────────────────────────────────────────
+function httpsGet(url) {
+  return new Promise((resolve, reject) => {
+    https_mod.get(url, r => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>resolve(d)); }).on('error',reject);
+  });
+}
+function checkUrl(url) {
+  return new Promise((resolve) => {
+    try {
+      const parsed = new URL(url);
+      const lib    = parsed.protocol === 'https:' ? https_mod : http_mod;
+      const req    = lib.request({ method:'HEAD', hostname:parsed.hostname, path:parsed.pathname+parsed.search, headers:{'User-Agent':'Quickio/1.0'}, timeout:5000 }, r => resolve(r.statusCode >= 200 && r.statusCode < 400));
+      req.on('error', () => resolve(false));
+      req.on('timeout', () => { req.destroy(); resolve(false); });
+      req.end();
+    } catch { resolve(false); }
+  });
+}
+function extractDomain(url) { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; } }
+
+// ── FAQ ───────────────────────────────────────────────────────────
+app.get('/api/sites/:websiteId/faq', async function(req, res) {
+  try {
+    const { rows } = await pool.query(
+      'SELECT w.faq_cache, w.faq_generated_at, w.business_name, p.trade, w.city FROM websites w JOIN professionals p ON p.id=w.professional_id WHERE w.id=$1',
+      [req.params.websiteId]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Site non trouvé' });
+    const site = rows[0];
+    const age  = site.faq_generated_at ? Date.now() - new Date(site.faq_generated_at).getTime() : Infinity;
+    if (site.faq_cache && age < 30*24*60*60*1000) return res.json(site.faq_cache);
+    const faq = await generateFaq(site);
+    await pool.query('UPDATE websites SET faq_cache=$1, faq_generated_at=NOW() WHERE id=$2', [JSON.stringify(faq), req.params.websiteId]);
+    res.json(faq);
+  } catch(err) { console.error('[FAQ]', err); res.status(500).json({ error: 'Erreur FAQ' }); }
+});
+
+async function generateFaq({ business_name, trade, description, city }) {
+  const GROQ_KEY = process.env.GROQ_API_KEY;
+  if (!GROQ_KEY) throw new Error('GROQ_API_KEY manquante');
+  const prompt = `Tu es un expert SEO spécialisé dans les sites vitrine de professionnels locaux.
+Génère exactement 3 questions-réponses FAQ pour ce professionnel.
+Professionnel : ${business_name}
+Secteur : ${trade || 'Non précisé'}
+Description : ${description || 'Non précisée'}
+Ville : ${city || 'France'}
+Règles :
+- Questions que se posent vraiment les clients avant de contacter ce pro
+- Réponses utiles, rassurantes, précises (150-250 mots)
+- Intègre naturellement le secteur et la ville pour le SEO local
+- Pour chaque question, propose UN lien externe vers une source officielle (service-public.fr, legifrance.fr, ademe.fr, anah.fr, ameli.fr, inrs.fr...)
+- Le lien doit être pertinent avec le sujet de la question
+Réponds UNIQUEMENT avec un tableau JSON valide :
+[{ "question":"...","answer":"...","source_url":"https://...","source_label":"..." }]
+`.trim();
+  const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+GROQ_KEY },
+    body: JSON.stringify({ model:'llama-3.3-70b-versatile', messages:[{role:'system',content:'JSON valide uniquement.'},{role:'user',content:prompt}], temperature:0.45, max_tokens:1600 })
+  });
+  const data = await r.json();
+  const raw  = data.choices[0].message.content.trim().replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim();
+  let items  = JSON.parse(raw);
+  if (!Array.isArray(items) || items.length < 3) throw new Error('FAQ malformée');
+  return Promise.all(items.slice(0,3).map(async item => {
+    const entry = { question: String(item.question||'').trim(), answer: String(item.answer||'').trim(), source_url: null, source_label: null };
+    if (item.source_url) {
+      try { new URL(item.source_url); const ok = await checkUrl(item.source_url); if (ok) { entry.source_url = item.source_url; entry.source_label = item.source_label || extractDomain(item.source_url); } } catch {}
+    }
+    return entry;
+  }));
+}
+
+// ── MARQUES ───────────────────────────────────────────────────────
+app.get('/api/sites/:websiteId/brands', async function(req, res) {
+  const { rows } = await pool.query('SELECT * FROM brands WHERE website_id=$1 ORDER BY position ASC', [req.params.websiteId]);
+  res.json(rows);
+});
+app.post('/api/sites/:websiteId/brands', requireAuth, async function(req, res) {
+  const w = await pool.query('SELECT id FROM websites WHERE id=$1 AND professional_id=$2', [req.params.websiteId, req.session.professionalId]);
+  if (!w.rows.length) return res.status(403).json({ error: 'Accès refusé' });
+  const { name, logo_url, website_url } = req.body;
+  const { rows } = await pool.query('INSERT INTO brands (website_id,name,logo_url,website_url) VALUES ($1,$2,$3,$4) RETURNING *', [req.params.websiteId, name, logo_url||null, website_url||null]);
+  res.json(rows[0]);
+});
+app.delete('/api/sites/:websiteId/brands/:id', requireAuth, async function(req, res) {
+  await pool.query('DELETE FROM brands WHERE id=$1 AND website_id=$2', [req.params.id, req.params.websiteId]);
+  res.json({ success: true });
+});
+
+// ── CARTE OSM ─────────────────────────────────────────────────────
+app.get('/api/sites/:websiteId/map-data', async function(req, res) {
+  try {
+    const { rows } = await pool.query('SELECT w.city, w.geocode, w.business_name FROM websites w WHERE w.id=$1', [req.params.websiteId]);
+    if (!rows.length) return res.status(404).json({});
+    const site = rows[0];
+    let geo = site.geocode;
+    if (!geo && site.city) {
+      const r = await httpsGet('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(site.city + ', France'));
+      const results = JSON.parse(r);
+      if (results[0]) {
+        geo = { lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) };
+        await pool.query('UPDATE websites SET geocode=$1 WHERE id=$2', [JSON.stringify(geo), req.params.websiteId]);
+      }
+    }
+    res.json({ name: site.business_name, city: site.city, lat: geo&&geo.lat, lng: geo&&geo.lng, type: 'home' });
+  } catch(err) { res.status(500).json({ error: 'Erreur carte' }); }
+});
+
+// ── GOOGLE RATING ────────────────────────────────────────────────
+app.get('/api/sites/:websiteId/google-rating', async function(req, res) {
+  try {
+    const { rows } = await pool.query(
+      'SELECT google_place_id,google_rating,google_review_count,google_maps_url,google_reviews,google_synced_at,opening_hours_text,opening_hours_override,w.business_name,w.city FROM websites w JOIN professionals p ON p.id=w.professional_id WHERE w.id=$1',
+      [req.params.websiteId]
+    );
+    if (!rows.length) return res.status(404).json({});
+    const row = rows[0];
+    if ((Date.now() - new Date(row.google_synced_at||0)) > 86400000 && row.business_name)
+      syncGoogle(req.params.websiteId, row.business_name, row.city).catch(()=>{});
+    if (!row.google_rating) return res.json({ found: false });
+    res.json({
+      found: true,
+      google_rating: row.google_rating,
+      google_review_count: row.google_review_count,
+      google_maps_url: row.google_maps_url,
+      google_reviews: row.google_reviews || [],
+      opening_hours: row.opening_hours_override || row.opening_hours_text || null,
+    });
+  } catch(err) { res.status(500).json({ error: 'Erreur' }); }
+});
+
+app.post('/api/sites/:websiteId/google-rating/sync', async function(req, res) {
+  const { rows } = await pool.query('SELECT p.business_name, w.city FROM websites w JOIN professionals p ON p.id=w.professional_id WHERE w.id=$1 AND p.id=$2', [req.params.websiteId, req.session.professionalId]);
+  if (!rows.length) return res.status(403).json({ error: 'Accès refusé' });
+  const result = await syncGoogle(req.params.websiteId, req.body.business_name||rows[0].business_name, req.body.city||rows[0].city);
+  if (!result) return res.status(404).json({ found: false, message: 'Aucune fiche Google trouvée.' });
+  res.json({ found: true, ...result });
+});
+
+app.patch('/api/sites/:websiteId/opening-hours', requireAuth, async function(req, res) {
+  await pool.query('UPDATE websites SET opening_hours_override=$1 WHERE id=$2', [req.body.opening_hours||null, req.params.websiteId]);
+  res.json({ success: true });
+});
+
+async function syncGoogle(websiteId, businessName, city) {
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+  if (!apiKey) return null;
+  try {
+    const q      = encodeURIComponent((businessName+' '+(city||'')).trim());
+    const found  = JSON.parse(await httpsGet('https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input='+q+'&inputtype=textquery&fields=place_id,rating,user_ratings_total&language=fr&key='+apiKey)).candidates?.[0];
+    if (!found?.rating) return null;
+    const detail = JSON.parse(await httpsGet('https://maps.googleapis.com/maps/api/place/details/json?place_id='+found.place_id+'&fields=reviews,url,opening_hours&language=fr&reviews_sort=newest&key='+apiKey)).result||{};
+    const reviews = (detail.reviews||[]).filter(r=>r.text?.trim().length>10).slice(0,5).map(r=>({
+      author_name:r.author_name, initials:r.author_name.slice(0,2).toUpperCase(),
+      rating:r.rating, stars_filled:Array(r.rating).fill(null), stars_empty:Array(5-r.rating).fill(null),
+      text:r.text.trim(), relative_time:r.relative_time_description||''
+    }));
+    const opening_hours_text = formatOpeningHours(detail.opening_hours?.periods);
+    const mapsUrl = detail.url || 'https://www.google.com/maps/search/?api=1&query='+q;
+    await pool.query('UPDATE websites SET google_place_id=$1,google_rating=$2,google_review_count=$3,google_maps_url=$4,google_reviews=$5,opening_hours_text=$6,google_synced_at=NOW() WHERE id=$7',
+      [found.place_id, found.rating, found.user_ratings_total||0, mapsUrl, JSON.stringify(reviews), opening_hours_text, websiteId]);
+    return { google_rating:found.rating, google_review_count:found.user_ratings_total, google_maps_url:mapsUrl, google_reviews:reviews, opening_hours_text };
+  } catch(e) { console.error('[Google]', e); return null; }
+}
+
+function formatOpeningHours(periods) {
+  if (!periods?.length) return null;
+  const DAYS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const fmt  = t => { const h=parseInt(t.slice(0,2)),m=t.slice(2); return m==='00'?h+'h':h+'h'+m; };
+  const byH  = {};
+  for (const p of periods) {
+    if (!p.open||!p.close) continue;
+    const k = p.open.time+'|'+p.close.time;
+    (byH[k]=byH[k]||{open:p.open.time,close:p.close.time,days:[]}).days.push(p.open.day);
+  }
+  return Object.values(byH).map(({open,close,days}) => {
+    days.sort();
+    const ranges=[]; let s=days[0],pv=days[0];
+    for (let i=1;i<days.length;i++) { if(days[i]===pv+1){pv=days[i];}else{ranges.push(s===pv?DAYS[s]:DAYS[s]+'–'+DAYS[pv]);s=pv=days[i];} }
+    ranges.push(s===pv?DAYS[s]:DAYS[s]+'–'+DAYS[pv]);
+    return ranges.join(', ')+' '+fmt(open)+'–'+fmt(close);
+  }).join(' / ');
+}
+
+// ── CONTACT LEADS ────────────────────────────────────────────────
+app.post('/api/sites/:websiteId/contact', async function(req, res) {
+  try {
+    const { name, email, phone, message } = req.body;
+    await pool.query('INSERT INTO contact_leads (website_id,name,email,phone,message) VALUES ($1,$2,$3,$4,$5)', [req.params.websiteId, name, email, phone, message]);
+    res.json({ success: true });
+  } catch(err) { res.status(500).json({ error: 'Erreur envoi' }); }
+});
+
+// ── UPLOAD LOGO ───────────────────────────────────────────────────
+const logoUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5*1024*1024 }, fileFilter: (req,file,cb) => { ['image/jpeg','image/png','image/webp','image/svg+xml'].includes(file.mimetype)?cb(null,true):cb(new Error('Format non supporté')); } });
+
+app.post('/api/pro/sites/:websiteId/logo', requireAuth, logoUpload.single('logo'), async function(req, res) {
+  try {
+    const { rows } = await pool.query('SELECT id FROM websites WHERE id=$1 AND professional_id=$2', [req.params.websiteId, req.session.professionalId]);
+    if (!rows.length) return res.status(403).json({ error: 'Accès refusé' });
+    if (!req.file)    return res.status(400).json({ error: 'Aucun fichier' });
+    const filename = 'logo_'+req.params.websiteId+'_'+Date.now();
+    const ext      = req.file.mimetype === 'image/svg+xml' ? '.svg' : '.png';
+    const filePath = path.join(UPLOADS_DIR_LOGO, filename+ext);
+    fs.writeFileSync(filePath, req.file.buffer);
+    const logo_url = '/uploads/logos/'+filename+ext;
+    await pool.query('UPDATE websites SET logo_url=$1 WHERE id=$2', [logo_url, req.params.websiteId]);
+    res.json({ success: true, logo_url });
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/pro/sites/:websiteId/logo', requireAuth, async function(req, res) {
+  const { rows } = await pool.query('SELECT logo_url FROM websites WHERE id=$1 AND professional_id=$2', [req.params.websiteId, req.session.professionalId]);
+  if (!rows.length) return res.status(403).json({ error: 'Accès refusé' });
+  if (rows[0].logo_url) {
+    const p = path.join(__dirname,'..','public',rows[0].logo_url);
+    try { fs.unlinkSync(p); } catch {}
+    await pool.query('UPDATE websites SET logo_url=NULL WHERE id=$1', [req.params.websiteId]);
+  }
+  res.json({ success: true });
+});
+
+app.get('/api/pro/sites/:websiteId/logo', requireAuth, async function(req, res) {
+  const { rows } = await pool.query('SELECT logo_url FROM websites WHERE id=$1', [req.params.websiteId]);
+  res.json({ logo_url: rows[0]?.logo_url || null });
+});
+
+/* FIN QUICKIO_PATCH_V1 */
+
 app.listen(PORT, '0.0.0.0', function() { console.log('Quickio demarre sur http://0.0.0.0:' + PORT); });
