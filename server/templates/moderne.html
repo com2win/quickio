@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="fr" itemscope itemtype="https://schema.org/LocalBusiness">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- SEO primaire -->
+{{#if is_local_page}}
+<title>{{specialty_label}} à {{local_city}} — {{business_name}} | Devis Gratuit</title>
+<meta name="description" content="{{business_name}}, expert {{specialty_label}} à {{local_city}} ({{department_code}}). Intervention rapide, devis gratuit. ☎ {{phone}}">
+{{else}}
+<title>{{seo_title}}</title>
+<meta name="description" content="{{meta_description}}">
+{{/if}}
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<link rel="canonical" href="{{canonical_url}}">
+
+<!-- Open Graph -->
+<meta property="og:type"        content="website">
+<meta property="og:title"       content="{{seo_title}}">
+<meta property="og:description" content="{{meta_description}}">
+<meta property="og:url"         content="{{canonical_url}}">
+<meta property="og:image"       content="{{hero_image}}">
+<meta property="og:locale"      content="fr_FR">
+<meta property="og:site_name"   content="{{business_name}}">
+
+<!-- Twitter Card -->
+<meta name="twitter:card"        content="summary_large_image">
+<meta name="twitter:title"       content="{{seo_title}}">
+<meta name="twitter:description" content="{{meta_description}}">
+<meta name="twitter:image"       content="{{hero_image}}">
+
+<!-- Géolocalisation -->
+<meta name="geo.region"   content="FR-{{department_code}}">
+<meta name="geo.placename"content="{{city}}">
+
+<!-- Schema.org LocalBusiness JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "{{business_name}}",
+  "description": "{{meta_description}}",
+  "url": "{{canonical_url}}",
+  "telephone": "{{phone}}",
+  "image": "{{hero_image}}",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "{{address}}",
+    "addressLocality": "{{city}}",
+    "postalCode": "{{postal_code}}",
+    "addressCountry": "FR"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "{{lat}}",
+    "longitude": "{{lng}}"
+  },
+  "openingHoursSpecification": {{opening_hours_schema}},
+  "aggregateRating": {{#if google_rating}}{
+    "@type": "AggregateRating",
+    "ratingValue": "{{google_rating}}",
+    "reviewCount": "{{google_review_count}}",
+    "bestRating": "5",
+    "worstRating": "1"
+  }{{else}}null{{/if}},
+  "areaServed": {
+    "@type": "City",
+    "name": "{{city}}"
+  },
+  "priceRange": "€€",
+  "currenciesAccepted": "EUR",
+  "paymentAccepted": "Cash, Carte bancaire, Virement"
+}
+</script>
+
+<!-- ═══ BREADCRUMB SCHEMA ═══════════════════════════════ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Accueil",
+      "item": "{{canonical_url}}"
+    }
+    {{#if is_local_page}},
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "{{specialty_label}} à {{local_city}}",
+      "item": "{{canonical_url}}"
+    }
+    {{/if}}
+  ]
+}
+</script>
+
+<!-- ═══ SERVICE SCHEMA (une entrée par prestation) ════════ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Prestations — {{business_name}}",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "item": {
+        "@type": "Service",
+        "name": "{{service_1_title}}",
+        "description": "{{service_1_description}}",
+        "provider": { "@type": "LocalBusiness", "name": "{{business_name}}" },
+        "areaServed": { "@type": "City", "name": "{{city}}" },
+        "url": "{{canonical_url}}#services"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "item": {
+        "@type": "Service",
+        "name": "{{service_2_title}}",
+        "description": "{{service_2_description}}",
+        "provider": { "@type": "LocalBusiness", "name": "{{business_name}}" },
+        "areaServed": { "@type": "City", "name": "{{city}}" },
+        "url": "{{canonical_url}}#services"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "item": {
+        "@type": "Service",
+        "name": "{{service_3_title}}",
+        "description": "{{service_3_description}}",
+        "provider": { "@type": "LocalBusiness", "name": "{{business_name}}" },
+        "areaServed": { "@type": "City", "name": "{{city}}" },
+        "url": "{{canonical_url}}#services"
+      }
+    }
+  ]
+}
+</script>
+
+<!-- ═══ FAQ SCHEMA (alimenté par les questions Groq) ══════ -->
+{{#if faq_schema_items}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {{#each faq_schema_items}}
+    {
+      "@type": "Question",
+      "name": "{{this.question}}",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{this.answer}}"
+      }
+    }{{#unless @last}},{{/unless}}
+    {{/each}}
+  ]
+}
+</script>
+{{/if}}
+
+<!-- ═══ SITELINKS SEARCHBOX ═════════════════════════════ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": "{{site_base_url}}",
+  "name": "{{business_name}}",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "{{site_base_url}}/recherche?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
+<!-- ═══ PAGE LOCALE : surcharge areaServed + mention ville ══
+     Uniquement injecté sur les pages /services/ville         -->
+{{#if is_local_page}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "{{business_name}}",
+  "url": "{{canonical_url}}",
+  "areaServed": [
+    { "@type": "City", "name": "{{local_city}}" },
+    { "@type": "City", "name": "{{city}}" }
+  ],
+  "hasMap": "{{google_maps_url}}",
+  "serviceArea": {
+    "@type": "GeoCircle",
+    "geoMidpoint": {
+      "@type": "GeoCoordinates",
+      "latitude": "{{local_lat}}",
+      "longitude": "{{local_lng}}"
+    },
+    "geoRadius": "10000"
+  }
+}
+</script>
+{{/if}}
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="https://basemaps.cartocdn.com">
+
+<!-- Fonts : affichage non bloquant -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet"></noscript>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"></noscript>
+<style>
+/* ═══════════════════════════════════════════════════
+   VARIABLES — injectées par Quickio depuis websites.theme
+═══════════════════════════════════════════════════ */
+:root {
+  --primary:        {{primary_color}};
+  --primary-light:  {{primary_color}}18;
+  --primary-mid:    {{primary_color}}35;
+  --accent:         {{accent_color}};
+  --bg:             #fafaf8;
+  --bg-card:        #ffffff;
+  --text:           #1c1c1e;
+  --text-soft:      #6b7280;
+  --text-xsoft:     #9ca3af;
+  --border:         #e8e8e4;
+  --border-light:   #f0f0ec;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-ui:      'Plus Jakarta Sans', sans-serif;
+
+  --r-sm:   10px;
+  --r-md:   16px;
+  --r-lg:   24px;
+  --r-xl:   32px;
+  --r-full: 999px;
+
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.04);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg:  0 12px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+
+  --max-w: 1080px;
+  --pad:   clamp(20px, 5vw, 48px);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+img { display: block; max-width: 100%; }
+a   { color: inherit; text-decoration: none; }
+h1,h2,h3,h4 { line-height: 1.2; }
+
+/* ═══════════════════ BREADCRUMB ═══════════════════ */
+.breadcrumb {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+  padding: 10px var(--pad);
+}
+.breadcrumb__list {
+  max-width: var(--max-w); margin: 0 auto;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+  list-style: none; font-size: 13px; color: var(--text-soft);
+}
+.breadcrumb__item a { color: var(--text-soft); text-decoration: none; transition: color .15s; }
+.breadcrumb__item a:hover { color: var(--primary); }
+.breadcrumb__item--current { color: var(--text); font-weight: 500; }
+.breadcrumb__sep { color: var(--border); }
+
+/* ═══════════════════ TOPBAR ═══════════════════ */
+.topbar {
+  background: var(--text);
+  color: rgba(255,255,255,.75);
+  font-size: 13px;
+  padding: 9px var(--pad);
+  display: flex; align-items: center; justify-content: center; gap: 28px;
+  flex-wrap: wrap;
+}
+.topbar__stars { color: #fbbf24; letter-spacing: 1px; }
+.topbar__google-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: rgba(255,255,255,.85);
+  transition: color .18s;
+}
+.topbar__google-badge:hover { color: #fff; }
+.topbar__google-badge svg { flex-shrink: 0; }
+.topbar a { color: #fbbf24; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+
+/* ═══════════════════ HEADER ═══════════════════ */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(250,250,248,.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-light);
+}
+.header__inner {
+  max-width: var(--max-w); margin: 0 auto;
+  padding: 0 var(--pad);
+  height: 68px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 600;
+  color: var(--text);
+  letter-spacing: -.3px;
+}
+.logo em { color: var(--primary); font-style: normal; }
+
+.nav { display: flex; align-items: center; gap: 4px; }
+.nav a {
+  padding: 8px 14px; border-radius: var(--r-full);
+  font-size: 14px; font-weight: 500;
+  color: var(--text-soft);
+  transition: color .18s, background .18s;
+}
+.nav a:hover { color: var(--text); background: var(--border-light); }
+.nav .cta {
+  background: var(--primary);
+  color: #fff;
+  padding: 9px 20px;
+  margin-left: 6px;
+  font-weight: 600;
+}
+.nav .cta:hover { background: var(--accent); color: #fff; }
+
+/* ═══════════════════ HERO ═══════════════════ */
+.hero {
+  padding: clamp(48px, 8vw, 96px) var(--pad) clamp(40px, 6vw, 72px);
+  max-width: var(--max-w); margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: clamp(32px, 5vw, 64px); align-items: center;
+}
+.hero__badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--primary-light); color: var(--primary);
+  padding: 6px 14px; border-radius: var(--r-full);
+  font-size: 13px; font-weight: 600;
+  margin-bottom: 20px;
+}
+.hero__badge .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--primary);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:.5; transform:scale(1.4); }
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4.5vw, 54px);
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 18px;
+  letter-spacing: -.5px;
+  line-height: 1.12;
+}
+.hero h1 em { color: var(--primary); font-style: italic; }
+.hero__sub {
+  font-size: 17px; color: var(--text-soft);
+  font-weight: 300; margin-bottom: 36px;
+  max-width: 420px;
+}
+.hero__ctas { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 24px; border-radius: var(--r-full);
+  font-family: var(--font-ui); font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all .2s; border: none;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 16px var(--primary-mid); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px var(--primary-mid); }
+.btn-ghost { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+.btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
+.btn-white { background: #fff; color: var(--primary); box-shadow: var(--shadow-sm); }
+.btn-white:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+.hero__note { margin-top: 14px; font-size: 13px; color: var(--text-xsoft); }
+
+/* Image hero */
+.hero__visual { position: relative; }
+.hero__img-wrap {
+  border-radius: var(--r-xl);
+  overflow: visible;
+  box-shadow: var(--shadow-lg);
+  aspect-ratio: 4/3;
+  position: relative;
+}
+.hero__img-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--r-xl); }
+.hero__pill {
+  position: absolute; bottom: -16px; left: -16px;
+  background: #fff; border-radius: var(--r-lg);
+  padding: 14px 20px; box-shadow: var(--shadow-md);
+  display: flex; align-items: center; gap: 12px;
+  font-size: 13px;
+  z-index: 2;
+}
+.hero__pill-icon {
+  width: 40px; height: 40px; border-radius: var(--r-md);
+  background: var(--primary-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.hero__pill-icon--google {
+  background: #f8f9fa;
+  border: 1px solid #e8eaed;
+}
+.hero__pill-text strong {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 15px; font-weight: 700; color: var(--text);
+  margin-bottom: 2px;
+}
+.hero__pill-stars { font-size: 12px; letter-spacing: 1px; }
+.hero__pill-text span { color: var(--text-soft); }
+
+/* ═══════════════════ BANDEAU CONFIANCE ═══════════════════ */
+.trust {
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+  padding: 22px var(--pad);
+}
+.trust__inner {
+  max-width: var(--max-w); margin: 0 auto;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 32px;
+}
+.trust__item {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 14px; font-weight: 500; color: var(--text-soft);
+}
+.trust__item svg { width: 18px; height: 18px; color: var(--primary); flex-shrink: 0; }
+
+/* ═══════════════════ SECTIONS ═══════════════════ */
+.section { padding: clamp(56px, 8vw, 96px) var(--pad); }
+.section__inner { max-width: var(--max-w); margin: 0 auto; }
+.section--tinted { background: var(--bg-card); }
+
+.section__label {
+  font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--primary);
+  margin-bottom: 10px;
+}
+.section__title {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 3.5vw, 40px);
+  font-weight: 600; letter-spacing: -.3px;
+  color: var(--text); margin-bottom: 14px;
+}
+.section__title em { color: var(--primary); font-style: italic; }
+.section__sub {
+  font-size: 16px; color: var(--text-soft); font-weight: 300;
+  max-width: 520px;
+}
+.section__header { margin-bottom: 52px; }
+
+/* ═══════════════════ SERVICES ═══════════════════ */
+.service-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: clamp(32px, 5vw, 72px); align-items: center;
+  margin-bottom: clamp(56px, 8vw, 96px);
+}
+.service-row:last-child { margin-bottom: 0; }
+.service-row--rev { direction: rtl; }
+.service-row--rev > * { direction: ltr; }
+
+.service__img {
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  box-shadow: var(--shadow-md);
+}
+.service__img img { width:100%; height:100%; object-fit: cover; transition: transform .5s ease; }
+.service__img:hover img { transform: scale(1.03); }
+
+.service__num {
+  font-family: var(--font-display);
+  font-size: 13px; font-weight: 600;
+  color: var(--primary); letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.service__title {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.8vw, 32px);
+  font-weight: 600; color: var(--text);
+  margin-bottom: 14px; letter-spacing: -.2px;
+}
+.service__desc { font-size: 15px; color: var(--text-soft); margin-bottom: 22px; line-height: 1.75; }
+.service__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+.chip {
+  background: var(--primary-light); color: var(--primary);
+  padding: 5px 13px; border-radius: var(--r-full);
+  font-size: 13px; font-weight: 500;
+}
+
+/* ═══════════════════ CTA BANDE ═══════════════════ */
+.cta-section {
+  background: var(--primary);
+  padding: clamp(48px, 7vw, 80px) var(--pad);
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.cta-section::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(255,255,255,.08)'/%3E%3C/svg%3E") repeat;
+}
+.cta-section__inner { position: relative; max-width: var(--max-w); margin: 0 auto; }
+.cta-section h2 {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 3.5vw, 42px);
+  color: #fff; font-weight: 600; margin-bottom: 12px;
+}
+.cta-section p { color: rgba(255,255,255,.75); font-size: 17px; margin-bottom: 32px; font-weight: 300; }
+
+/* ═══════════════════ AVIS ═══════════════════ */
+.reviews-summary {
+  margin-top: 16px;
+}
+.reviews-summary__link {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-full);
+  padding: 10px 20px;
+  box-shadow: var(--shadow-sm);
+  font-size: 14px; color: var(--text);
+  transition: box-shadow .2s, border-color .2s;
+  text-decoration: none;
+}
+.reviews-summary__link:hover { box-shadow: var(--shadow-md); border-color: var(--primary-mid); }
+.reviews-summary__score { font-weight: 700; font-size: 16px; color: var(--text); }
+.reviews-summary__stars { font-size: 14px; letter-spacing: 1px; }
+.reviews-summary__count { color: var(--text-soft); }
+.reviews-summary__cta   { color: var(--primary); font-weight: 600; margin-left: 4px; }
+
+.reviews-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.review-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s, transform .2s;
+}
+.review-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.review-card__top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.review-card__stars { font-size: 15px; letter-spacing: 1px; }
+.review-card__date  { font-size: 12px; color: var(--text-xsoft); }
+.review-card__source { font-size: 12px; color: var(--text-xsoft); font-weight: 500; }
+.review-card__text {
+  font-size: 15px; color: var(--text-soft); line-height: 1.75;
+  font-style: italic; margin-bottom: 18px;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+.review-card__author {
+  display: flex; align-items: center; gap: 10px;
+}
+.review-card__avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--primary-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--primary);
+  flex-shrink: 0;
+}
+.review-card__name   { font-weight: 600; font-size: 14px; color: var(--text); }
+.review-card__source { font-size: 12px; color: var(--text-xsoft); }
+.reviews-footer { text-align: center; margin-top: 32px; }
+.reviews-footer__btn { font-size: 14px; padding: 11px 24px; }
+
+/* ═══════════════════ GALERIE ═══════════════════ */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+.gallery-item {
+  border-radius: var(--r-md); overflow: hidden;
+  position: relative; aspect-ratio: 4/3; cursor: zoom-in;
+}
+.gallery-item img { width:100%; height:100%; object-fit:cover; transition: transform .4s ease; }
+.gallery-item:hover img { transform: scale(1.06); }
+.gallery-item__cap {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.55) 0%, transparent 50%);
+  display: flex; align-items: flex-end;
+  padding: 16px;
+  opacity: 0; transition: opacity .3s;
+  color: white; font-size: 13px; font-weight: 500;
+}
+.gallery-item:hover .gallery-item__cap { opacity: 1; }
+
+/* ═══════════════════ ATOUTS ═══════════════════ */
+.atouts-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+.atout {
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-lg);
+  padding: 28px 24px;
+  text-align: center;
+  transition: box-shadow .2s;
+}
+.atout:hover { box-shadow: var(--shadow-md); }
+.atout__icon {
+  width: 56px; height: 56px; border-radius: var(--r-md);
+  background: var(--primary-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; margin: 0 auto 16px;
+  color: var(--primary);
+}
+.atout h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+.atout p  { font-size: 14px; color: var(--text-soft); line-height: 1.65; }
+
+/* ═══════════════════ PARTENAIRES / MARQUES ═══════════════════ */
+.brands-track-wrap {
+  position: relative; overflow: hidden;
+  /* fondu latéral */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  mask-image:         linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+.brands-track {
+  display: flex; gap: 20px;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+.brands-track:hover { animation-play-state: paused; }
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.brand-card {
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-lg);
+  padding: 20px 28px;
+  min-width: 148px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .25s, border-color .25s, transform .25s;
+  cursor: pointer;
+  text-decoration: none;
+}
+.brand-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-mid);
+  transform: translateY(-3px);
+}
+.brand-card__logo {
+  height: 48px; width: 110px;
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-card__logo img {
+  max-height: 48px; max-width: 110px;
+  object-fit: contain;
+  filter: grayscale(60%) opacity(.75);
+  transition: filter .25s;
+}
+.brand-card:hover .brand-card__logo img {
+  filter: grayscale(0%) opacity(1);
+}
+/* Fallback logo : initiales en couleur si pas d'image */
+.brand-card__logo-fallback {
+  width: 56px; height: 56px;
+  border-radius: var(--r-md);
+  background: var(--primary-light);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 20px; font-weight: 600;
+  color: var(--primary);
+  letter-spacing: -.5px;
+}
+.brand-card__name {
+  font-size: 12px; font-weight: 700; letter-spacing: .5px;
+  text-transform: uppercase; color: var(--text-soft);
+  text-align: center;
+}
+/* Grille statique (fallback si JS désactivé ou < 4 marques) */
+.brands-grid-static {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 16px;
+}
+.brands-grid-static .brand-card { animation: none; }
+
+/* ═══════════════════ FAQ — generée par IA ═══════════════════ */
+.faq-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+.faq-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s;
+}
+.faq-card:hover { box-shadow: var(--shadow-md); }
+.faq-card summary {
+  list-style: none; cursor: pointer;
+  padding: 22px 24px;
+  font-weight: 600; font-size: 16px; color: var(--text);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+}
+.faq-card summary::-webkit-details-marker { display: none; }
+.faq-card summary .faq-toggle {
+  width: 28px; height: 28px; flex-shrink: 0;
+  border-radius: 50%; background: var(--primary-light);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary); font-size: 18px; font-weight: 300;
+  transition: transform .25s, background .2s;
+  margin-top: 2px;
+}
+details.faq-card[open] summary .faq-toggle {
+  transform: rotate(45deg); background: var(--primary);
+  color: white;
+}
+/* Loader FAQ */
+.faq-loading {
+  text-align: center; padding: 48px;
+  color: var(--text-soft); font-size: 15px;
+}
+.faq-loading::after {
+  content: '';
+  display: inline-block; width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  vertical-align: middle; margin-left: 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.faq-error { text-align: center; padding: 32px; color: var(--text-soft); font-size: 15px; }
+.faq-card__body { padding: 0 24px 22px; border-top: 1px solid var(--border-light); }
+.faq-card__body p { font-size: 15px; color: var(--text-soft); line-height: 1.78; padding-top: 16px; }
+.faq-source {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 12px;
+  font-size: 12px; font-weight: 600;
+  color: var(--primary); text-decoration: none;
+  border: 1px solid var(--primary-mid);
+  border-radius: var(--r-full);
+  padding: 4px 10px;
+  transition: background .18s, color .18s;
+}
+.faq-source:hover { background: var(--primary); color: #fff; }
+
+/* ═══════════════════ CONTACT ═══════════════════ */
+.contact-grid {
+  display: grid; grid-template-columns: 1fr 1.2fr; gap: 56px; align-items: start;
+}
+.contact-aside h2 {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3vw, 32px); font-weight: 600;
+  color: var(--text); margin-bottom: 12px;
+}
+.contact-aside p { color: var(--text-soft); font-weight: 300; margin-bottom: 32px; font-size: 16px; }
+.contact-phone-block {
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 16px;
+}
+.contact-phone-block__icon {
+  width: 48px; height: 48px; border-radius: var(--r-md);
+  background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.contact-phone-block__num {
+  font-weight: 700; font-size: 20px;
+  color: var(--text);
+}
+.contact-phone-block__num a { color: inherit; }
+.contact-phone-block__sub { font-size: 13px; color: var(--text-soft); }
+
+.form-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-xl);
+  padding: clamp(24px, 4vw, 40px);
+  box-shadow: var(--shadow-md);
+}
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block; font-size: 12px; font-weight: 700;
+  letter-spacing: .8px; text-transform: uppercase;
+  color: var(--text-soft); margin-bottom: 6px;
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%; padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  font-family: var(--font-ui); font-size: 15px; color: var(--text);
+  background: var(--bg); outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+  background: var(--bg-card);
+}
+.form-group textarea { resize: vertical; min-height: 120px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-consent { font-size: 12px; color: var(--text-xsoft); margin-bottom: 16px; line-height: 1.6; }
+.btn-submit { width: 100%; justify-content: center; font-size: 15px; padding: 15px; }
+.form-success {
+  text-align: center; padding: 40px 24px;
+  font-family: var(--font-display); font-size: 22px;
+  color: var(--primary);
+}
+.form-success small { display: block; font-family: var(--font-ui); font-size: 14px; color: var(--text-soft); margin-top: 8px; }
+
+/* ═══════════════════ CARTE OSM ═══════════════════ */
+.map-block {
+  margin-top: 20px;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+#osm-map {
+  width: 100%; height: 260px;
+  background: var(--bg);
+  z-index: 1;
+}
+/* Surcharge Leaflet pour coller au design */
+.leaflet-container {
+  font-family: var(--font-ui) !important;
+  border-radius: var(--r-lg);
+}
+.leaflet-popup-content-wrapper {
+  border-radius: var(--r-md) !important;
+  box-shadow: var(--shadow-md) !important;
+  border: 1px solid var(--border-light);
+  padding: 0 !important;
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+  padding: 14px 18px !important;
+  font-family: var(--font-ui) !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+.leaflet-popup-content strong {
+  display: block; font-size: 14px;
+  color: var(--text); margin-bottom: 3px;
+}
+.leaflet-popup-content span { color: var(--text-soft); }
+.leaflet-popup-tip { background: var(--bg-card) !important; }
+.leaflet-control-zoom a {
+  border-radius: var(--r-sm) !important;
+  font-size: 16px !important;
+}
+/* Marqueur personnalisé */
+.map-marker {
+  background: var(--primary);
+  width: 36px; height: 36px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 3px solid white;
+  box-shadow: 0 3px 12px rgba(0,0,0,.25);
+  position: relative;
+}
+.map-marker::after {
+  content: '';
+  background: white;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+/* Badge zone d'intervention (pages locales) */
+.map-zone-badge {
+  position: absolute; top: 12px; left: 12px; z-index: 10;
+  background: white; border: 1px solid var(--border-light);
+  border-radius: var(--r-full); padding: 5px 12px;
+  font-size: 12px; font-weight: 600; color: var(--text-soft);
+  box-shadow: var(--shadow-sm);
+  display: flex; align-items: center; gap: 5px;
+  pointer-events: none;
+}
+.map-zone-badge::before {
+  content: ''; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--primary); flex-shrink: 0;
+}
+/* Lien OSM discret sous la carte */
+.map-osm-credit {
+  padding: 6px 12px;
+  background: var(--bg);
+  border-top: 1px solid var(--border-light);
+  font-size: 11px; color: var(--text-xsoft); text-align: right;
+}
+.map-osm-credit a { color: var(--text-xsoft); text-decoration: underline; }
+
+/* ═══════════════════ FOOTER ═══════════════════ */
+.footer {
+  background: var(--text);
+  color: rgba(255,255,255,.6);
+  padding: clamp(40px, 6vw, 64px) var(--pad) 0;
+}
+.footer__inner {
+  max-width: var(--max-w); margin: 0 auto;
+  display: grid; grid-template-columns: 2fr 1fr 1fr;
+  gap: 40px; padding-bottom: 48px;
+}
+.footer__logo {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 12px;
+}
+.footer__logo em { color: var(--accent); font-style: normal; }
+.footer__logo-img { height: 36px; max-width: 160px; object-fit: contain; filter: brightness(0) invert(1); opacity: .9; }
+.logo__img { height: 32px; max-width: 140px; object-fit: contain; display: block; }
+.footer__desc { font-size: 14px; line-height: 1.75; max-width: 280px; margin-bottom: 20px; }
+.footer__rating {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 13px; color: rgba(255,255,255,.55);
+  text-decoration: none; transition: color .18s;
+}
+.footer__rating:hover { color: rgba(255,255,255,.85); }
+.footer__rating .stars { color: #fbbf24; }
+.footer__col h4 {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px;
+  font-weight: 700; color: rgba(255,255,255,.35); margin-bottom: 16px;
+}
+.footer__col ul { list-style: none; }
+.footer__col ul li { margin-bottom: 9px; }
+.footer__col ul li a {
+  font-size: 14px; color: rgba(255,255,255,.55);
+  transition: color .18s;
+}
+.footer__col ul li a:hover { color: #fff; }
+.footer__bottom {
+  max-width: var(--max-w); margin: 0 auto;
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding: 18px 0;
+  display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: space-between; gap: 12px;
+  font-size: 13px;
+}
+.footer__bottom a { color: rgba(255,255,255,.4); transition: color .18s; }
+.footer__bottom a:hover { color: rgba(255,255,255,.8); }
+
+/* ═══════════════════ FLOATING CTA ═══════════════════ */
+.float-cta {
+  position: fixed; bottom: 24px; right: 24px; z-index: 200;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  opacity: 1; transition: opacity .3s;
+}
+.float-cta__bubble {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 16px 16px 0 16px;
+  padding: 12px 16px;
+  box-shadow: var(--shadow-md);
+  font-size: 13px; max-width: 220px; color: var(--text-soft);
+  animation: bob 3s ease-in-out infinite;
+}
+@keyframes bob {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+.float-cta__btn {
+  background: var(--primary); color: #fff;
+  padding: 13px 22px; border-radius: var(--r-full);
+  font-family: var(--font-ui); font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 20px var(--primary-mid);
+  transition: background .2s, transform .2s, box-shadow .2s;
+}
+.float-cta__btn:hover {
+  background: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,.2);
+}
+
+/* ═══════════════════ RESPONSIVE ═══════════════════ */
+@media (max-width: 860px) {
+  .hero             { grid-template-columns: 1fr; }
+  .hero__visual     { margin-top: 36px; }
+  .hero__img-wrap   { aspect-ratio: 16/9; }
+  .service-row      { grid-template-columns: 1fr; direction: ltr !important; }
+  .service-row > *  { direction: ltr; }
+  .contact-grid     { grid-template-columns: 1fr; }
+  .footer__inner    { grid-template-columns: 1fr; }
+  .form-row         { grid-template-columns: 1fr; }
+  .faq-grid         { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .nav a:not(.cta) { display: none; }
+  .trust__inner > *:nth-child(n+3) { display: none; }
+  .float-cta__bubble { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <span><span class="topbar__stars">★★★★★</span> Recommandé par nos clients</span>
+  <a href="tel:{{phone}}">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+    {{phone}}
+  </a>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header__inner">
+    <a href="/" class="logo">
+      {{#if logo_url}}
+        <img src="{{logo_url}}" alt="{{business_name}}" class="logo__img">
+      {{else}}
+        {{business_name_short}}<em>.</em>
+      {{/if}}
+    </a>
+    <nav class="nav">
+      <a href="#services">Services</a>
+      <a href="#avis">Avis</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact" class="cta">Devis gratuit →</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<!-- Breadcrumb visible (SEO + UX) — masqué sur page d'accueil -->
+{{#if is_local_page}}
+<nav class="breadcrumb" aria-label="Fil d'Ariane">
+  <ol class="breadcrumb__list" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <li class="breadcrumb__item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+      <a href="{{site_base_url}}" itemprop="item"><span itemprop="name">Accueil</span></a>
+      <meta itemprop="position" content="1">
+    </li>
+    <li class="breadcrumb__sep" aria-hidden="true">›</li>
+    <li class="breadcrumb__item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+      <a href="{{site_base_url}}/{{specialty_slug}}" itemprop="item"><span itemprop="name">{{specialty_label}}</span></a>
+      <meta itemprop="position" content="2">
+    </li>
+    <li class="breadcrumb__sep" aria-hidden="true">›</li>
+    <li class="breadcrumb__item breadcrumb__item--current" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+      <span itemprop="name">{{specialty_label}} à {{local_city}}</span>
+      <meta itemprop="position" content="3">
+    </li>
+  </ol>
+</nav>
+{{/if}}
+<section>
+  <div class="hero">
+    <div class="hero__content">
+      <div class="hero__badge"><span class="dot"></span> {{experience}} d'expérience</div>
+      <h1>{{headline}}<br><em>{{headline_location}}</em></h1>
+      <p class="hero__sub">{{hero_subtitle}}</p>
+      <div class="hero__ctas">
+        <a href="tel:{{phone}}" class="btn btn-ghost">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+          {{phone}}
+        </a>
+        <a href="#contact" class="btn btn-primary">Demande de devis →</a>
+      </div>
+      <p class="hero__note">Appel gratuit 7j/7 · Réponse rapide, sans engagement</p>
+    </div>
+    <div class="hero__visual">
+      <div class="hero__img-wrap">
+        <img src="{{hero_image}}" alt="{{business_name}} — {{specialty}} à {{city}}" fetchpriority="high" loading="eager" width="900" height="675" itemprop="image">
+        <div class="hero__pill">
+          {{#if google_rating}}
+          <div class="hero__pill-icon hero__pill-icon--google">
+            <!-- Logo Google SVG -->
+            <svg width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+          </div>
+          <div class="hero__pill-text">
+            <strong>
+              {{google_rating}}
+              <span class="hero__pill-stars">
+                {{#each google_stars_filled}}<span style="color:#fbbf24">★</span>{{/each}}{{#each google_stars_empty}}<span style="color:#d1d5db">★</span>{{/each}}
+              </span>
+            </strong>
+            <span>{{google_review_count}} avis Google</span>
+          </div>
+          {{else}}
+          <div class="hero__pill-icon">⭐</div>
+          <div class="hero__pill-text">
+            <strong>100% recommandé</strong>
+            <span>par nos clients</span>
+          </div>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONFIANCE -->
+<div class="trust">
+  <div class="trust__inner">
+    <div class="trust__item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Devis gratuit sans engagement
+    </div>
+    <div class="trust__item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Assurance professionnelle
+    </div>
+    <div class="trust__item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      Intervention 7j/7
+    </div>
+    <div class="trust__item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      {{experience}} d'expérience
+    </div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section class="section" id="services">
+  <div class="section__inner">
+    <div class="section__header">
+      <p class="section__label">Nos prestations</p>
+      <h2 class="section__title">Ce que nous <em>faisons</em></h2>
+      <p class="section__sub">{{services_intro}}</p>
+    </div>
+
+    <!-- Service 1 -->
+    <div class="service-row">
+      <div class="service__img">
+        <img src="{{service_1_image}}" alt="{{service_1_title}} — {{business_name}}" loading="lazy" width="800" height="600">
+      </div>
+      <div>
+        <div class="service__num">01</div>
+        <h3 class="service__title">{{service_1_title}}</h3>
+        <p class="service__desc">{{service_1_description}}</p>
+        <div class="service__chips">
+          <span class="chip">{{service_1_point_1}}</span>
+          <span class="chip">{{service_1_point_2}}</span>
+          <span class="chip">{{service_1_point_3}}</span>
+        </div>
+        <a href="#contact" class="btn btn-primary">Devis {{service_1_short}} →</a>
+      </div>
+    </div>
+
+    <!-- Service 2 -->
+    <div class="service-row service-row--rev">
+      <div class="service__img">
+        <img src="{{service_2_image}}" alt="{{service_2_title}} — {{business_name}}" loading="lazy" width="800" height="600">
+      </div>
+      <div>
+        <div class="service__num">02</div>
+        <h3 class="service__title">{{service_2_title}}</h3>
+        <p class="service__desc">{{service_2_description}}</p>
+        <div class="service__chips">
+          <span class="chip">{{service_2_point_1}}</span>
+          <span class="chip">{{service_2_point_2}}</span>
+          <span class="chip">{{service_2_point_3}}</span>
+        </div>
+        <a href="#contact" class="btn btn-primary">Devis {{service_2_short}} →</a>
+      </div>
+    </div>
+
+    <!-- Service 3 -->
+    <div class="service-row">
+      <div class="service__img">
+        <img src="{{service_3_image}}" alt="{{service_3_title}} — {{business_name}}" loading="lazy" width="800" height="600">
+      </div>
+      <div>
+        <div class="service__num">03</div>
+        <h3 class="service__title">{{service_3_title}}</h3>
+        <p class="service__desc">{{service_3_description}}</p>
+        <div class="service__chips">
+          <span class="chip">{{service_3_point_1}}</span>
+          <span class="chip">{{service_3_point_2}}</span>
+          <span class="chip">{{service_3_point_3}}</span>
+        </div>
+        <a href="#contact" class="btn btn-primary">Devis gratuit →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA DEVIS -->
+<div class="cta-section">
+  <div class="cta-section__inner">
+    <h2>Demandez votre devis sans engagement</h2>
+    <p>Un spécialiste {{specialty}} en {{zone}} vous répond rapidement.</p>
+    <a href="#contact" class="btn btn-white">Obtenir un devis gratuit →</a>
+  </div>
+</div>
+
+<!-- AVIS — affiché uniquement si fiche Google paramétrée -->
+{{#if google_rating}}
+<section class="section section--tinted" id="avis">
+  <div class="section__inner">
+    <div class="section__header">
+      <p class="section__label">Avis clients</p>
+      <h2 class="section__title">Ce que disent <em>nos clients</em></h2>
+      <!-- Résumé note globale -->
+      <div class="reviews-summary">
+        <a href="{{google_maps_url}}" target="_blank" rel="noopener" class="reviews-summary__link">
+          <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          <span class="reviews-summary__score">{{google_rating}}</span>
+          <span class="reviews-summary__stars">
+            {{#each google_stars_filled}}<span style="color:#fbbf24">★</span>{{/each}}{{#each google_stars_empty}}<span style="color:#d1d5db">★</span>{{/each}}
+          </span>
+          <span class="reviews-summary__count">{{google_review_count}} avis</span>
+          <span class="reviews-summary__cta">Voir sur Google →</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="reviews-grid" id="reviews-container">
+      {{#each google_reviews}}
+      <div class="review-card">
+        <div class="review-card__top">
+          <div class="review-card__stars">
+            {{#each this.stars_filled}}<span style="color:#fbbf24">★</span>{{/each}}{{#each this.stars_empty}}<span style="color:#d1d5db">★</span>{{/each}}
+          </div>
+          <div class="review-card__date">{{this.relative_time}}</div>
+        </div>
+        <p class="review-card__text">"{{this.text}}"</p>
+        <div class="review-card__author">
+          <div class="review-card__avatar">{{this.initials}}</div>
+          <div>
+            <div class="review-card__name">{{this.author_name}}</div>
+            <div class="review-card__source">Google</div>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+
+    <div class="reviews-footer">
+      <a href="{{google_maps_url}}" target="_blank" rel="noopener" class="btn btn-ghost reviews-footer__btn">
+        Voir tous les avis sur Google →
+      </a>
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- GALERIE -->
+{{#if modules.gallery}}
+<section class="section" id="realisations">
+  <div class="section__inner">
+    <div class="section__header">
+      <p class="section__label">Portfolio</p>
+      <h2 class="section__title">Nos <em>réalisations</em></h2>
+    </div>
+    <div class="gallery-grid" id="gallery-container">
+      {{#each gallery}}
+      <div class="gallery-item">
+        <img src="{{this.url}}" alt="{{this.caption}}">
+        <div class="gallery-item__cap">{{this.caption}}</div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- ATOUTS -->
+<section class="section section--tinted">
+  <div class="section__inner">
+    <div class="section__header">
+      <p class="section__label">Pourquoi nous choisir</p>
+      <h2 class="section__title">Notre <em>engagement</em></h2>
+    </div>
+    <div class="atouts-grid">
+      <div class="atout">
+        <div class="atout__icon">
+          <!-- Médaille / expérience -->
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="6"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/>
+          </svg>
+        </div>
+        <h3>{{experience}} d'expérience</h3>
+        <p>{{atout_1_text}}</p>
+      </div>
+      <div class="atout">
+        <div class="atout__icon">
+          <!-- Étoile / qualité -->
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <h3>Qualité garantie</h3>
+        <p>{{atout_2_text}}</p>
+      </div>
+      <div class="atout">
+        <div class="atout__icon">
+          <!-- Tag prix / tarifs -->
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+          </svg>
+        </div>
+        <h3>Tarifs transparents</h3>
+        <p>Devis clair et honnête — payez le juste prix pour une prestation soignée.</p>
+      </div>
+      <div class="atout">
+        <div class="atout__icon">
+          <!-- Téléphone / disponibilité -->
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+          </svg>
+        </div>
+        <h3>Disponibilité 7j/7</h3>
+        <p>Joignez-nous tous les jours. Réponse rapide et devis sous 24h.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUES / PRESTATAIRES -->
+{{#if modules.brands}}
+<section class="section" id="marques">
+  <div class="section__inner">
+    <div class="section__header">
+      <p class="section__label">Nos fournisseurs &amp; marques</p>
+      <h2 class="section__title">Des partenaires <em>de confiance</em></h2>
+      <p class="section__sub">{{brands_intro}}</p>
+    </div>
+
+    <!-- Rendu par JS — carousel si ≥5 marques, grille sinon -->
+    <div id="brands-container">
+      <div class="brands-grid-static" id="brands-static">
+        {{#each brands}}
+        <a href="{{this.url}}" class="brand-card" target="_blank" rel="noopener" title="{{this.name}}">
+          <div class="brand-card__logo">
+            {{#if this.logo}}
+            <img src="{{this.logo}}" alt="{{this.name}}" onerror="this.parentNode.innerHTML='<div class=\'brand-card__logo-fallback\'>{{this.initials}}</div>'">
+            {{else}}
+            <div class="brand-card__logo-fallback">{{this.initials}}</div>
+            {{/if}}
+          </div>
+          <span class="brand-card__name">{{this.name}}</span>
+        </a>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- FAQ — générée par Groq au chargement -->
+<section class="section section--tinted" id="faq">
+  <div class="section__inner">
+    <div class="section__header">
+      <p class="section__label">Questions fréquentes</p>
+      <h2 class="section__title">On répond à <em>vos questions</em></h2>
+    </div>
+
+    <!-- Conteneur FAQ : rempli en JS via Groq -->
+    <div id="faq-container">
+      <div class="faq-loading">Chargement des questions</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+{{#if modules.contact_form}}
+<section class="section" id="contact">
+  <div class="section__inner">
+    <div class="section__header">
+      <p class="section__label">Nous contacter</p>
+      <h2 class="section__title">Obtenez votre <em>devis gratuit</em></h2>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-aside">
+        <p>Remplissez le formulaire ou appelez-nous directement. Nous vous répondons rapidement.</p>
+        <div class="contact-phone-block">
+          <div class="contact-phone-block__icon">📞</div>
+          <div>
+            <div class="contact-phone-block__num"><a href="tel:{{phone}}">{{phone}}</a></div>
+            <div class="contact-phone-block__sub">
+              {{#if opening_hours}}
+                {{opening_hours}}
+              {{else}}
+                Appel gratuit — Contactez-nous
+              {{/if}}
+            </div>
+          </div>
+        </div>
+
+        <!-- CARTE OPENSTREETMAP -->
+        <div class="map-block">
+          <!-- Badge "Zone d'intervention" affiché sur les pages locales uniquement -->
+          <div class="map-zone-badge" id="map-zone-badge" style="display:none">
+            Zone : <span id="map-zone-label">{{city}}</span>
+          </div>
+          <div id="osm-map"></div>
+          <div class="map-osm-credit">
+            © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors
+          </div>
+        </div>
+      </div>
+      <div class="form-card" id="contact-form-wrap">
+        <form onsubmit="submitContact(event)" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Prénom</label>
+              <input type="text" name="firstname" placeholder="Jean" required>
+            </div>
+            <div class="form-group">
+              <label>Nom</label>
+              <input type="text" name="lastname" placeholder="Dupont" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>E-mail</label>
+            <input type="email" name="email" placeholder="jean@mail.com" required>
+          </div>
+          <div class="form-group">
+            <label>Téléphone</label>
+            <input type="tel" name="phone" placeholder="06 12 34 56 78">
+          </div>
+          <div class="form-group">
+            <label>Adresse d'intervention</label>
+            <input type="text" name="address" placeholder="Rue, ville…">
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea name="message" placeholder="Décrivez votre besoin…"></textarea>
+          </div>
+          <p class="form-consent">En envoyant ce formulaire vous acceptez que vos données soient transmises à notre entreprise.</p>
+          <button type="submit" class="btn btn-primary btn-submit">Envoyer ma demande →</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__logo">
+        {{#if logo_url}}
+          <img src="{{logo_url}}" alt="{{business_name}}" class="footer__logo-img">
+        {{else}}
+          {{business_name_short}}<em>.</em>
+        {{/if}}
+      </div>
+      <p class="footer__desc">{{footer_description}}</p>
+      {{#if google_rating}}
+      <a href="{{google_maps_url}}" target="_blank" rel="noopener" class="footer__rating">
+        <svg width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        <span class="stars">{{google_rating}} ★★★★★</span>
+        <span>· {{google_review_count}} avis</span>
+      </a>
+      {{/if}}
+    </div>
+    <div class="footer__col">
+      <h4>Prestations</h4>
+      <ul>
+        {{#each services_footer}}
+        <li><a href="{{this.url}}">{{this.label}}</a></li>
+        {{/each}}
+      </ul>
+    </div>
+    <div class="footer__col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="tel:{{phone}}">{{phone}}</a></li>
+        <li><a href="#contact">Devis gratuit</a></li>
+        <li>{{zone}}</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer__bottom">
+    <span>© {{business_name}}</span>
+    <span>
+      <a href="/mentions-legales">Mentions légales</a> ·
+      <a href="/confidentialite">RGPD</a> ·
+      <a href="/sitemap">Zones d'intervention</a>
+    </span>
+  </div>
+</footer>
+
+<!-- FLOATING CTA -->
+<div class="float-cta" id="floatCta">
+  <div class="float-cta__bubble">Votre {{profession}} vous répond gratuitement</div>
+  <a href="#contact" class="float-cta__btn">
+    Demander un devis 7j/7
+  </a>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   FAQ — Génération automatique via Groq
+   Appelé au chargement, données depuis
+   window.QUICKIO_SITE injectées par Node
+══════════════════════════════════════ */
+
+const SITE = window.QUICKIO_SITE || {};
+
+async function loadFAQ() {
+  const container = document.getElementById('faq-container');
+  try {
+    const res  = await fetch(`/api/sites/${SITE.website_id}/faq`);
+    if (!res.ok) throw new Error('API error');
+    const faqs = await res.json();
+    if (!faqs || faqs.length === 0) {
+      container.innerHTML = '<p class="faq-error">Aucune question disponible.</p>';
+      return;
+    }
+    container.innerHTML = `<div class="faq-grid">${
+      faqs.map((f, i) => `
+        <details class="faq-card" ${i === 0 ? 'open' : ''}>
+          <summary><span>${f.question}</span><span class="faq-toggle">+</span></summary>
+          <div class="faq-card__body">
+            <p>${f.answer}</p>
+            ${f.source_url ? `<a href="${f.source_url}" target="_blank" rel="noopener noreferrer" class="faq-source">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              ${f.source_label || 'En savoir plus'}
+            </a>` : ''}
+          </div>
+        </details>`).join('')
+    }</div>`;
+
+    /* FAQ Schema JSON-LD dynamique */
+    const existing = document.querySelector('script[data-faq-schema]');
+    if (existing) existing.remove();
+    const schema = document.createElement('script');
+    schema.type = 'application/ld+json';
+    schema.dataset.faqSchema = '1';
+    schema.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: { '@type': 'Answer', text: f.answer }
+      }))
+    });
+    document.head.appendChild(schema);
+
+  } catch (e) {
+    container.innerHTML = '<p class="faq-error">Questions non disponibles pour le moment.</p>';
+  }
+}
+
+/* ══════════════════════════════════════
+   Contact form → API Quickio
+══════════════════════════════════════ */
+async function submitContact(e) {
+  e.preventDefault();
+  const form = e.target;
+  const btn  = form.querySelector('.btn-submit');
+  const origText = btn.textContent;
+  btn.textContent = 'Envoi…'; btn.disabled = true;
+
+  try {
+    const res = await fetch(`/api/sites/${SITE.website_id}/contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:    `${form.firstname.value} ${form.lastname.value}`.trim(),
+        email:   form.email.value,
+        phone:   form.phone.value,
+        message: `Adresse : ${form.address.value}\n\n${form.message.value}`
+      })
+    });
+    if (res.ok) {
+      document.getElementById('contact-form-wrap').innerHTML =
+        '<div class="form-success">Message envoyé !<small>Nous vous répondons très vite.</small></div>';
+    } else { throw new Error(); }
+  } catch {
+    btn.textContent = origText; btn.disabled = false;
+  }
+}
+
+/* ══════════════════════════════════════
+   Masquer float CTA près du footer
+══════════════════════════════════════ */
+const floatCta = document.getElementById('floatCta');
+window.addEventListener('scroll', () => {
+  const footer = document.querySelector('.footer');
+  if (footer) {
+    floatCta.style.opacity =
+      footer.getBoundingClientRect().top < window.innerHeight + 60 ? '0' : '1';
+  }
+}, { passive: true });
+
+// Lancer le chargement FAQ
+loadFAQ();
+
+/* ══════════════════════════════════════
+   MARQUES — carousel si ≥ 5 entrées
+   Charge depuis /api/sites/:id/brands
+   puis duplique pour boucle infinie
+══════════════════════════════════════ */
+async function loadBrands() {
+  const container = document.getElementById('brands-container');
+  if (!container) return;
+
+  try {
+    const res = await fetch(`/api/sites/${SITE.website_id}/brands`);
+    if (!res.ok) throw new Error();
+    const brands = await res.json(); // [{ name, logo, url, initials }]
+    if (!brands || brands.length === 0) { container.closest('section')?.remove(); return; }
+
+    // Génère le HTML d'une card
+    const cardHTML = (b) => `
+      <a href="${b.url || '#'}" class="brand-card" target="_blank" rel="noopener" title="${b.name}">
+        <div class="brand-card__logo">
+          ${b.logo
+            ? `<img src="${b.logo}" alt="${b.name}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=\'brand-card__logo-fallback\'>${b.initials || b.name.slice(0,2).toUpperCase()}</div>'">`
+            : `<div class="brand-card__logo-fallback">${b.initials || b.name.slice(0,2).toUpperCase()}</div>`
+          }
+        </div>
+        <span class="brand-card__name">${b.name}</span>
+      </a>`;
+
+    if (brands.length >= 5) {
+      // Carousel : dupliquer pour boucle sans coupure
+      const doubled = [...brands, ...brands];
+      container.innerHTML = `
+        <div class="brands-track-wrap">
+          <div class="brands-track">
+            ${doubled.map(cardHTML).join('')}
+          </div>
+        </div>`;
+    } else {
+      // Grille statique centréepour < 5 marques
+      container.innerHTML = `
+        <div class="brands-grid-static">
+          ${brands.map(cardHTML).join('')}
+        </div>`;
+    }
+  } catch {
+    // Silencieux — la section reste avec le rendu Handlebars statique si présent
+  }
+}
+
+loadBrands();
+</script>
+
+<!-- Leaflet JS — OpenStreetMap -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════
+   CARTE OPENSTREETMAP — Leaflet
+   
+   Deux modes selon window.QUICKIO_SITE.page_type :
+   
+   • "home"  → marqueur précis sur l'adresse de l'entreprise
+              coords depuis SITE.lat / SITE.lng (géocodées en amont)
+              zoom 15, popup avec nom + adresse
+   
+   • "local" → marqueur centré sur la ville de la page SEO locale
+              coords depuis SITE.local_lat / SITE.local_lng
+              zoom 12, cercle de zone d'intervention, badge ville
+              (pas de marqueur précis → confidentialité)
+   
+   Le géocodage est effectué côté backend Node.js
+   via Nominatim (OpenStreetMap, gratuit, sans clé)
+   et stocké dans websites.geocode JSONB.
+══════════════════════════════════════════════════════ */
+(function initMap() {
+  const mapEl = document.getElementById('osm-map');
+  if (!mapEl) return;
+
+  const S         = window.QUICKIO_SITE || {};
+  const pageType  = S.page_type || 'home';   // "home" | "local"
+  const isLocal   = pageType === 'local';
+
+  // ── Coordonnées ──────────────────────────────────────
+  const lat  = isLocal ? (S.local_lat  || S.lat  || 43.6047) : (S.lat  || 43.6047);
+  const lng  = isLocal ? (S.local_lng  || S.lng  || 1.4442)  : (S.lng  || 1.4442);
+  const zoom = isLocal ? 12 : 15;
+
+  // ── Init carte ───────────────────────────────────────
+  const map = L.map('osm-map', {
+    center: [lat, lng],
+    zoom,
+    zoomControl: true,
+    scrollWheelZoom: false,   // évite le scroll accidentel sur mobile
+    attributionControl: false // on gère nous-mêmes le crédit
+  });
+
+  // Tuiles OpenStreetMap — style Carto Voyager (plus clair)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    subdomains: 'abcd'
+  }).addTo(map);
+
+  // ── Marqueur personnalisé ────────────────────────────
+  const markerIcon = L.divIcon({
+    className: '',
+    html: '<div class="map-marker"></div>',
+    iconSize:   [36, 36],
+    iconAnchor: [18, 36],
+    popupAnchor:[0, -38]
+  });
+
+  if (isLocal) {
+    // MODE LOCAL — marqueur ville + cercle de zone
+    const circle = L.circle([lat, lng], {
+      radius:      8000,      // ~8 km autour de la ville
+      color:       getComputedStyle(document.documentElement)
+                     .getPropertyValue('--primary').trim() || '#3d8c5f',
+      fillColor:   getComputedStyle(document.documentElement)
+                     .getPropertyValue('--primary').trim() || '#3d8c5f',
+      fillOpacity: 0.08,
+      weight:      2,
+      dashArray:   '6 4'
+    }).addTo(map);
+
+    L.marker([lat, lng], { icon: markerIcon })
+      .addTo(map)
+      .bindPopup(`
+        <strong>${S.business_name || 'Notre entreprise'}</strong>
+        <span>Intervention à ${S.local_city || S.city || 'votre ville'} et environs</span>
+      `, { maxWidth: 220 })
+      .openPopup();
+
+    // Afficher le badge zone
+    const badge = document.getElementById('map-zone-badge');
+    const label = document.getElementById('map-zone-label');
+    if (badge) {
+      badge.style.display = 'flex';
+      if (label) label.textContent = S.local_city || S.city || '';
+    }
+
+  } else {
+    // MODE HOME — marqueur précis adresse entreprise
+    L.marker([lat, lng], { icon: markerIcon })
+      .addTo(map)
+      .bindPopup(`
+        <strong>${S.business_name || 'Notre entreprise'}</strong>
+        <span>${S.address || S.city || ''}</span>
+      `, { maxWidth: 220 })
+      .openPopup();
+  }
+
+  // Recalcul taille si la carte était cachée (display:none parent)
+  setTimeout(() => map.invalidateSize(), 300);
+})();
+</script>
+</body>
+</html>
