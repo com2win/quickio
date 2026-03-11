@@ -73,7 +73,7 @@ if (!fs.existsSync(UPLOADS_DIR_LOGO)) fs.mkdirSync(UPLOADS_DIR_LOGO, { recursive
 // ── Helpers ──────────────────────────────────────────────────────
 function httpsGet(url) {
   return new Promise((resolve, reject) => {
-    https_mod.get(url, r => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>resolve(d)); }).on('error',reject);
+    https_mod.get(url, { headers: {'User-Agent':'Quickio/1.0 (quickio.fr)'} }, r => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>resolve(d)); }).on('error',reject);
   });
 }
 function checkUrl(url) {
