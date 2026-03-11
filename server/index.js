@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
+const multer = require('multer');
 const { renderSite } = require('./templates/render-site');
 const { pool, query, queryOne, queryAll } = require('./db/pool');
 const app = express();
