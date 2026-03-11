@@ -5,7 +5,7 @@ RUN addgroup -g 1001 quickio && adduser -u 1001 -G quickio -s /bin/sh -D quickio
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci --production
+RUN npm install --production
 
 COPY . .
 
