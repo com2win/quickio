@@ -925,20 +925,54 @@ details.faq-card[open] summary .faq-toggle {
     <!-- Service 3 -->
     <div class="service-row">
       <div class="service__img">
-        <img src="{{service_3_image}}" alt="Dessouchage & Entretien de jardin">
+        <img src="{{service_3_image}}" alt="{{service_3_title}}">
       </div>
       <div>
         <div class="service__num">03</div>
-        <h3 class="service__title">Dessouchage & Entretien de jardin</h3>
+        <h3 class="service__title">{{service_3_title}}</h3>
         <p class="service__desc">{{service_3_description}}</p>
         <div class="service__chips">
-          <span class="chip">Rogneuse ou pelleteuse</span>
-          <span class="chip">Taille de haies</span>
-          <span class="chip">Tonte & débroussaillage</span>
+          <span class="chip">{{service_3_point_1}}</span>
+          <span class="chip">{{service_3_point_2}}</span>
+          <span class="chip">{{service_3_point_3}}</span>
         </div>
-        <a href="#contact" class="btn btn-primary">Devis gratuit →</a>
+        <a href="#contact" class="btn btn-primary">Devis {{service_3_title}} →</a>
       </div>
     </div>
+    <!-- Services 4-6 -->
+    {{#if service_4_title}}
+    <div class="service-row service-row--rev">
+      <div class="service__img"><img src="{{service_4_image}}" alt="{{service_4_title}}"></div>
+      <div>
+        <div class="service__num">04</div>
+        <h3 class="service__title">{{service_4_title}}</h3>
+        <p class="service__desc">{{service_4_description}}</p>
+        <a href="#contact" class="btn btn-primary">Devis {{service_4_title}} →</a>
+      </div>
+    </div>
+    {{/if}}
+    {{#if service_5_title}}
+    <div class="service-row">
+      <div class="service__img"><img src="{{service_5_image}}" alt="{{service_5_title}}"></div>
+      <div>
+        <div class="service__num">05</div>
+        <h3 class="service__title">{{service_5_title}}</h3>
+        <p class="service__desc">{{service_5_description}}</p>
+        <a href="#contact" class="btn btn-primary">Devis {{service_5_title}} →</a>
+      </div>
+    </div>
+    {{/if}}
+    {{#if service_6_title}}
+    <div class="service-row service-row--rev">
+      <div class="service__img"><img src="{{service_6_image}}" alt="{{service_6_title}}"></div>
+      <div>
+        <div class="service__num">06</div>
+        <h3 class="service__title">{{service_6_title}}</h3>
+        <p class="service__desc">{{service_6_description}}</p>
+        <a href="#contact" class="btn btn-primary">Devis {{service_6_title}} →</a>
+      </div>
+    </div>
+    {{/if}}
   </div>
 </section>
 
@@ -1275,6 +1309,7 @@ async function submitContact(e) {
   btn.textContent = 'Envoi…'; btn.disabled = true;
 
   try {
+    if (!SITE.website_id) return;
     const res = await fetch(`/api/sites/${SITE.website_id}/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1319,6 +1354,7 @@ async function loadBrands() {
   if (!container) return;
 
   try {
+    if (!SITE.website_id) return;
     const res = await fetch(`/api/sites/${SITE.website_id}/brands`);
     if (!res.ok) throw new Error();
     const brands = await res.json(); // [{ name, logo, url, initials }]

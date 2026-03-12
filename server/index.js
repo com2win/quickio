@@ -1,3 +1,5 @@
+process.on("uncaughtException",function(e){console.error("[crash]",e.message);});
+process.on("unhandledRejection",function(e){console.error("[reject]",e&&e.message);});
 const express = require('express');
 const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
@@ -6,10 +8,36 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
+process.on('uncaughtException', function(err) {
+  console.error('[uncaughtException]', err.message);
+});
+process.on('unhandledRejection', function(err) {
+  console.error('[unhandledRejection]', err && err.message);
+});
+
 const multer = require('multer');
 const { renderSite } = require('./templates/render-site');
 const { pool, query, queryOne, queryAll } = require('./db/pool');
 const app = express();
+
+const _origQuery = pool.query.bind(pool);
+pool.query = function(text, params) {
+  if (params) {
+    for (var i=0; i<params.length; i++) {
+      if (params[i] === undefined || params[i] === 'undefined') {
+        return Promise.reject(new Error('QUERY_BLOCKED: undefined param in: ' + text.substring(0,60)));
+      }
+    }
+  }
+  return _origQuery(text, params);
+};
+
+
+// Auto-catch middleware
+const asyncWrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(err => {
+  console.error('[route-error]', req.method, req.path, err.message);
+});
+
 const PORT = process.env.PORT || 3000;
 const UPLOADS_DIR = path.join(__dirname, '..', 'public', 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
@@ -61,6 +89,7 @@ function extractDomain(url) { try { return new URL(url).hostname.replace(/^www\.
 // ── FAQ ───────────────────────────────────────────────────────────
 app.get('/api/sites/:websiteId/faq', async function(req, res) {
   try {
+    if (!req.params.websiteId || req.params.websiteId === 'undefined') return res.status(400).json({ error: 'websiteId manquant' });
     const { rows } = await pool.query(
       'SELECT w.faq_cache, w.faq_generated_at, w.business_name, p.trade, w.city FROM websites w JOIN professionals p ON p.id=w.professional_id WHERE w.id=$1',
       [req.params.websiteId]
@@ -99,6 +128,7 @@ Réponds UNIQUEMENT avec un tableau JSON valide :
     body: JSON.stringify({ model:'llama-3.3-70b-versatile', messages:[{role:'system',content:'JSON valide uniquement.'},{role:'user',content:prompt}], temperature:0.45, max_tokens:1600 })
   });
   const data = await r.json();
+  if (!data.choices || !data.choices[0]) throw new Error('Groq no response');
   const raw  = data.choices[0].message.content.trim().replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim();
   let items  = JSON.parse(raw);
   if (!Array.isArray(items) || items.length < 3) throw new Error('FAQ malformée');
@@ -113,8 +143,11 @@ Réponds UNIQUEMENT avec un tableau JSON valide :
 
 // ── MARQUES ───────────────────────────────────────────────────────
 app.get('/api/sites/:websiteId/brands', async function(req, res) {
-  const { rows } = await pool.query('SELECT * FROM brands WHERE website_id=$1 ORDER BY position ASC', [req.params.websiteId]);
-  res.json(rows);
+  try {
+    if (!req.params.websiteId || req.params.websiteId === 'undefined') return res.json([]);
+    const { rows } = await pool.query('SELECT * FROM brands WHERE website_id=$1 ORDER BY position ASC', [req.params.websiteId]);
+    res.json(rows);
+  } catch(err) { console.error('[brands]', err.message); res.json([]); }
 });
 app.post('/api/sites/:websiteId/brands', requireAuth, async function(req, res) {
   const w = await pool.query('SELECT id FROM websites WHERE id=$1 AND professional_id=$2', [req.params.websiteId, req.session.professionalId]);
@@ -269,3 +302,32 @@ app.get('/api/pro/sites/:websiteId/logo', requireAuth, async function(req, res) 
 /* FIN QUICKIO_PATCH_V1 */
 
 app.listen(PORT, '0.0.0.0', function() { console.log('Quickio demarre sur http://0.0.0.0:' + PORT); });
+
+app.get('/dashboard', function(req, res) {
+  res.sendFile(path.join(__dirname, '..', 'public', 'pages', 'dashboard.html'));
+});
+
+app.get('/editor', function(req, res) {
+  res.sendFile(path.join(__dirname, '..', 'public', 'pages', 'editor.html'));
+});
+
+app.get('/templates', function(req, res) {
+  res.sendFile(path.join(__dirname, '..', 'public', 'pages', 'templates.html'));
+});
+
+app.post('/api/auth/onboarding', requireAuth, async function(req, res) {
+  try {
+    var b = req.body;
+    await queryOne('UPDATE professionals SET phone=$1, address=$2, siret=$3, partners=$4, google_place_name=$5, onboarding_done=true WHERE id=$6',
+      [b.phone||'', b.address||'', b.siret||'', b.partners||'', b.googlePlaceName||'', req.session.professionalId]);
+    if (b.city) await queryOne('UPDATE websites SET city=$1 WHERE professional_id=$2', [b.city, req.session.professionalId]);
+    res.json({ success: true });
+  } catch(err) { console.error(err); res.status(500).json({ error: 'Erreur serveur' }); }
+});
+
+app.get('/api/auth/onboarding-status', requireAuth, async function(req, res) {
+  try {
+    var pro = await queryOne('SELECT onboarding_done FROM professionals WHERE id=$1', [req.session.professionalId]);
+    res.json({ done: pro ? pro.onboarding_done : false });
+  } catch(err) { res.status(500).json({ error: 'Erreur serveur' }); }
+});

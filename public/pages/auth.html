@@ -37,9 +37,7 @@ h1,h2,h3{font-family:'Syne',sans-serif;}
 .pw-strength{margin-top:6px;}
 .pw-bars{display:flex;gap:3px;margin-bottom:3px;}
 .pw-bar{flex:1;height:3px;background:var(--border);border-radius:2px;transition:background .3s;}
-.pw-bar.weak{background:var(--red);}
-.pw-bar.medium{background:#FF8C42;}
-.pw-bar.strong{background:var(--green);}
+.pw-bar.weak{background:var(--red);}.pw-bar.medium{background:#FF8C42;}.pw-bar.strong{background:var(--green);}
 .pw-label{font-size:.72rem;color:var(--ink-muted);}
 .checkbox-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:20px;}
 .checkbox-row input[type=checkbox]{margin-top:2px;accent-color:var(--blue);cursor:pointer;}
@@ -53,10 +51,49 @@ h1,h2,h3{font-family:'Syne',sans-serif;}
 .bottom-link a{color:var(--blue);font-weight:600;cursor:pointer;}
 .alert{padding:12px 16px;border-radius:10px;font-size:.85rem;margin-bottom:16px;display:none;}
 .alert.error{background:#FFE8EC;color:var(--red);border:1px solid rgba(255,77,106,.2);}
-.alert.success{background:var(--green-light,#E6FBF2);color:var(--green);border:1px solid rgba(0,201,122,.2);}
+.alert.success{background:#E6FBF2;color:var(--green);border:1px solid rgba(0,201,122,.2);}
 .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite;display:none;}
 @keyframes spin{to{transform:rotate(360deg);}}
-@media(max-width:768px){.page{grid-template-columns:1fr;}.left{display:none;}.right{padding:32px 24px;}}
+.modal-overlay{position:fixed;inset:0;background:rgba(10,15,30,.6);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.active{display:flex;}
+.modal{background:white;border-radius:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(10,15,30,.2);}
+.modal-header{padding:32px 32px 0;}
+.modal-steps{display:flex;align-items:center;gap:8px;margin-bottom:24px;}
+.step-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;transition:all .3s;}
+.step-dot.active{background:var(--blue);color:white;}
+.step-dot.done{background:var(--green);color:white;}
+.step-dot.pending{background:var(--border);color:var(--ink-muted);}
+.step-line{flex:1;height:2px;background:var(--border);border-radius:2px;transition:background .3s;}
+.step-line.done{background:var(--green);}
+.modal-title{font-size:1.4rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:4px;}
+.modal-sub{font-size:.875rem;color:var(--ink-muted);margin-bottom:24px;}
+.modal-body{padding:0 32px;}
+.modal-footer{padding:24px 32px 32px;display:flex;gap:12px;}
+.btn-secondary{flex:1;padding:13px;background:var(--surface);color:var(--ink);border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-secondary:hover{border-color:var(--blue);color:var(--blue);}
+.btn-primary{flex:2;padding:13px;background:var(--blue);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(26,107,255,.3);transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-primary:hover{background:var(--blue-dark);}
+.btn-primary:disabled{opacity:.6;pointer-events:none;}
+.optional-badge{display:inline-block;background:var(--blue-light);color:var(--blue);font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;}
+.themes-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:8px;}
+.theme-card{border:2px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .25s;position:relative;}
+.theme-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,107,255,.12);}
+.theme-card.selected{border-color:var(--blue);box-shadow:0 0 0 4px rgba(26,107,255,.15);}
+.theme-card.selected::after{content:'✓';position:absolute;top:8px;right:8px;width:22px;height:22px;background:var(--blue);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;}
+.theme-preview{height:100px;display:flex;flex-direction:column;}
+.theme-preview-bar{height:28px;display:flex;align-items:center;padding:0 10px;gap:6px;}
+.theme-preview-bar span{font-size:.55rem;font-weight:700;color:white;opacity:.9;}
+.theme-preview-dots{display:flex;gap:3px;}
+.theme-preview-dots i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.4);}
+.theme-preview-body{flex:1;padding:8px 10px;display:flex;flex-direction:column;gap:4px;}
+.theme-preview-line{height:5px;border-radius:3px;background:rgba(0,0,0,.08);}
+.theme-preview-line.title{height:8px;width:60%;background:rgba(0,0,0,.15);}
+.theme-label{padding:8px 12px;font-size:.8rem;font-weight:700;color:var(--ink);border-top:1px solid var(--border);}
+.theme-badge{display:inline-block;font-size:.65rem;font-weight:700;padding:2px 6px;border-radius:6px;margin-left:4px;}
+.theme-badge.new{background:#FFF0E0;color:#FF8C42;}
+.theme-badge.popular{background:#E6FBF2;color:var(--green);}
+.coming-soon{opacity:.5;pointer-events:none;}
+@media(max-width:768px){.page{grid-template-columns:1fr;}.left{display:none;}.right{padding:32px 24px;}.modal-header,.modal-body,.modal-footer{padding-left:20px;padding-right:20px;}}
 </style>
 </head>
 <body>
@@ -81,171 +118,128 @@ h1,h2,h3{font-family:'Syne',sans-serif;}
         <button class="auth-tab active" onclick="switchTab('login',this)">Connexion</button>
         <button class="auth-tab" onclick="switchTab('signup',this)">Créer un compte</button>
       </div>
-
-      <!-- LOGIN -->
       <div id="form-login">
         <h2 class="auth-title">Bon retour 👋</h2>
         <p class="auth-sub">Connectez-vous à votre espace Quickio.</p>
         <div class="alert error" id="login-error"></div>
-        <div class="form-group">
-          <label class="form-label">Adresse email</label>
-          <input class="form-input" type="email" id="login-email" placeholder="vous@exemple.fr" autocomplete="email"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Mot de passe</label>
-          <div class="input-wrap">
-            <input class="form-input" type="password" id="login-pw" placeholder="••••••••"/>
-            <span class="input-icon" onclick="togglePw('login-pw',this)">👁</span>
-          </div>
-        </div>
+        <div class="form-group"><label class="form-label">Adresse email</label><input class="form-input" type="email" id="login-email" placeholder="vous@exemple.fr" autocomplete="email"/></div>
+        <div class="form-group"><label class="form-label">Mot de passe</label><div class="input-wrap"><input class="form-input" type="password" id="login-pw" placeholder="••••••••"/><span class="input-icon" onclick="togglePw('login-pw',this)">👁</span></div></div>
         <a class="forgot-link">Mot de passe oublié ?</a>
-        <button class="btn-submit" id="btn-login" onclick="doLogin()">
-          <span>Se connecter →</span><div class="spinner" id="login-spin"></div>
-        </button>
+        <button class="btn-submit" id="btn-login" onclick="doLogin()"><span>Se connecter →</span><div class="spinner" id="login-spin"></div></button>
         <div class="bottom-link">Pas encore de compte ? <a onclick="switchTab('signup',document.querySelectorAll('.auth-tab')[1])">Créer un compte</a></div>
       </div>
-
-      <!-- SIGNUP -->
       <div id="form-signup" style="display:none">
         <h2 class="auth-title">Créer mon site 🚀</h2>
         <p class="auth-sub">Essai gratuit · Sans carte bancaire requise.</p>
         <div class="alert error" id="signup-error"></div>
         <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Prénom</label>
-            <input class="form-input" type="text" id="fname" placeholder="Jean"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Nom</label>
-            <input class="form-input" type="text" id="lname" placeholder="Dupont"/>
-          </div>
+          <div class="form-group"><label class="form-label">Prénom</label><input class="form-input" type="text" id="fname" placeholder="Jean"/></div>
+          <div class="form-group"><label class="form-label">Nom</label><input class="form-input" type="text" id="lname" placeholder="Dupont"/></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input class="form-input" type="email" id="signup-email" placeholder="vous@exemple.fr"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Mot de passe</label>
-          <div class="input-wrap">
-            <input class="form-input" type="password" id="signup-pw" placeholder="8 caractères minimum" oninput="checkPw(this.value)"/>
-            <span class="input-icon" onclick="togglePw('signup-pw',this)">👁</span>
-          </div>
-          <div class="pw-strength">
-            <div class="pw-bars"><div class="pw-bar" id="pb1"></div><div class="pw-bar" id="pb2"></div><div class="pw-bar" id="pb3"></div><div class="pw-bar" id="pb4"></div></div>
-            <div class="pw-label" id="pw-label">Entrez un mot de passe</div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Votre métier</label>
-          <select class="form-input" id="metier">
-            <option value="">Sélectionnez votre activité…</option>
-            <option>Électricien</option><option>Plombier</option><option>Menuisier</option>
-            <option>Coiffeur / Esthéticien</option><option>Restaurant / Café</option>
-            <option>Médecin / Kiné / Thérapeute</option><option>Coach sportif</option>
-            <option>Freelance / Designer</option><option>Commerce de proximité</option><option>Autre</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Adresse de votre site</label>
-          <div style="display:flex;align-items:center;gap:0;border:1.5px solid #E2E8F8;border-radius:10px;overflow:hidden;">
-            <input class="form-input" type="text" id="sitename" placeholder="mon-entreprise" style="border:none;border-radius:0;flex:1;" oninput="updateSlugPreview(this.value)"/>
-            <span style="padding:0 12px;background:#F7F9FF;color:#8892A4;font-size:0.85rem;white-space:nowrap;height:100%;display:flex;align-items:center;border-left:1px solid #E2E8F8;">.quickio.fr</span>
-          </div>
-          <div id="slug-preview" style="font-size:0.78rem;color:var(--green);margin-top:4px;"></div>
-        </div>
-        <div class="checkbox-row">
-          <input type="checkbox" id="cgu"/>
-          <label for="cgu">J'accepte les <a href="#">Conditions d'utilisation</a> et la <a href="#">Politique de confidentialité</a>.</label>
-        </div>
-        <button class="btn-submit" id="btn-signup" onclick="doSignup()">
-          <span>Créer mon compte gratuit →</span><div class="spinner" id="signup-spin"></div>
-        </button>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="signup-email" placeholder="vous@exemple.fr"/></div>
+        <div class="form-group"><label class="form-label">Mot de passe</label><div class="input-wrap"><input class="form-input" type="password" id="signup-pw" placeholder="8 caractères minimum" oninput="checkPw(this.value)"/><span class="input-icon" onclick="togglePw('signup-pw',this)">👁</span></div><div class="pw-strength"><div class="pw-bars"><div class="pw-bar" id="pb1"></div><div class="pw-bar" id="pb2"></div><div class="pw-bar" id="pb3"></div><div class="pw-bar" id="pb4"></div></div><div class="pw-label" id="pw-label">Entrez un mot de passe</div></div></div>
+        <div class="form-group"><label class="form-label">Votre métier</label><select class="form-input" id="metier"><option value="">Sélectionnez votre activité…</option><option>Électricien</option><option>Plombier</option><option>Menuisier</option><option>Coiffeur / Esthéticien</option><option>Restaurant / Café</option><option>Médecin / Kiné / Thérapeute</option><option>Coach sportif</option><option>Freelance / Designer</option><option>Commerce de proximité</option><option>Autre</option></select></div>
+        <div class="form-group"><label class="form-label">Adresse de votre site</label><div style="display:flex;align-items:center;border:1.5px solid #E2E8F8;border-radius:10px;overflow:hidden;"><input class="form-input" type="text" id="sitename" placeholder="mon-entreprise" style="border:none;border-radius:0;flex:1;" oninput="updateSlugPreview(this.value)"/><span style="padding:0 12px;background:#F7F9FF;color:#8892A4;font-size:.85rem;white-space:nowrap;display:flex;align-items:center;border-left:1px solid #E2E8F8;">.quickio.fr</span></div><div id="slug-preview" style="font-size:.78rem;color:var(--green);margin-top:4px;"></div></div>
+        <div class="checkbox-row"><input type="checkbox" id="cgu"/><label for="cgu">J'accepte les <a href="#">Conditions d'utilisation</a> et la <a href="#">Politique de confidentialité</a>.</label></div>
+        <button class="btn-submit" id="btn-signup" onclick="doSignup()"><span>Créer mon compte gratuit →</span><div class="spinner" id="signup-spin"></div></button>
         <div class="bottom-link">Déjà un compte ? <a onclick="switchTab('login',document.querySelectorAll('.auth-tab')[0])">Se connecter</a></div>
       </div>
     </div>
   </div>
 </div>
+
+<div class="modal-overlay" id="modal-onboarding">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-steps">
+        <div class="step-dot active" id="sdot1">1</div>
+        <div class="step-line" id="sline1"></div>
+        <div class="step-dot pending" id="sdot2">2</div>
+      </div>
+      <h2 class="modal-title" id="modal-title">Complétez votre profil 📋</h2>
+      <p class="modal-sub" id="modal-sub">Ces infos permettent de personnaliser votre site et d'optimiser votre référencement local.</p>
+    </div>
+    <div class="modal-body" id="step1-body">
+      <div class="alert error" id="onboard-error"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Téléphone</label><input class="form-input" type="tel" id="ob-phone" placeholder="06 12 34 56 78"/></div>
+        <div class="form-group"><label class="form-label">SIRET <span class="optional-badge">optionnel</span></label><input class="form-input" type="text" id="ob-siret" placeholder="123 456 789 00012"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Adresse professionnelle</label><input class="form-input" type="text" id="ob-address" placeholder="12 rue de la Paix, 75001 Paris"/></div>
+      <div class="form-group"><label class="form-label">Ville d'activité principale</label><input class="form-input" type="text" id="ob-city" placeholder="Paris, Lyon, Marseille…"/></div>
+      <div class="form-group"><label class="form-label">Marques & partenaires <span class="optional-badge">optionnel</span></label><input class="form-input" type="text" id="ob-partners" placeholder="Ex : Somfy, Schneider, Legrand…"/><div style="font-size:.75rem;color:var(--ink-muted);margin-top:4px;">Séparés par des virgules — apparaîtront sur votre site</div></div>
+      <div class="form-group"><label class="form-label">Nom fiche Google <span class="optional-badge">optionnel</span></label><input class="form-input" type="text" id="ob-google" placeholder="Ex : Dupont Électricité Paris 15"/><div style="font-size:.75rem;color:var(--ink-muted);margin-top:4px;">Tel qu'il apparaît sur Google Maps</div></div>
+    </div>
+    <div class="modal-body" id="step2-body" style="display:none;">
+      <div class="themes-grid">
+        <div class="theme-card selected" data-theme="moderne" onclick="selectTheme(this)">
+          <div class="theme-preview"><div class="theme-preview-bar" style="background:#1A6BFF;"><div class="theme-preview-dots"><i></i><i></i><i></i></div><span style="margin-left:auto;">Moderne</span></div><div class="theme-preview-body" style="background:#F7F9FF;"><div class="theme-preview-line title"></div><div class="theme-preview-line" style="width:80%;"></div><div class="theme-preview-line" style="width:50%;"></div><div style="margin-top:6px;"><div style="height:18px;width:40%;background:#1A6BFF;border-radius:4px;opacity:.7;"></div></div></div></div>
+          <div class="theme-label">Moderne <span class="theme-badge popular">Populaire</span></div>
+        </div>
+        <div class="theme-card coming-soon">
+          <div class="theme-preview"><div class="theme-preview-bar" style="background:#0A0F1E;"><div class="theme-preview-dots"><i></i><i></i><i></i></div><span style="margin-left:auto;">Bold</span></div><div class="theme-preview-body" style="background:#0A0F1E;"><div class="theme-preview-line title" style="background:rgba(255,255,255,.2);"></div><div class="theme-preview-line" style="width:80%;background:rgba(255,255,255,.1);"></div></div></div>
+          <div class="theme-label">Bold Dark <span class="theme-badge new">Bientôt</span></div>
+        </div>
+        <div class="theme-card coming-soon">
+          <div class="theme-preview"><div class="theme-preview-bar" style="background:#8B6914;"><div class="theme-preview-dots"><i></i><i></i><i></i></div><span style="margin-left:auto;">Élégant</span></div><div class="theme-preview-body" style="background:#FFFDF5;"><div class="theme-preview-line title" style="background:rgba(139,105,20,.3);"></div><div class="theme-preview-line" style="width:80%;background:rgba(139,105,20,.15);"></div></div></div>
+          <div class="theme-label">Élégant <span class="theme-badge new">Bientôt</span></div>
+        </div>
+        <div class="theme-card coming-soon">
+          <div class="theme-preview"><div class="theme-preview-bar" style="background:#333;"><div class="theme-preview-dots"><i></i><i></i><i></i></div><span style="margin-left:auto;">Minimal</span></div><div class="theme-preview-body" style="background:#fff;"><div class="theme-preview-line title" style="background:rgba(0,0,0,.15);"></div><div class="theme-preview-line" style="width:80%;"></div></div></div>
+          <div class="theme-label">Minimal <span class="theme-badge new">Bientôt</span></div>
+        </div>
+      </div>
+      <div style="font-size:.78rem;color:var(--ink-muted);text-align:center;margin-top:4px;">Vous pourrez changer de thème à tout moment depuis votre dashboard.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="modal-skip" onclick="skipOnboarding()">Passer</button>
+      <button class="btn-primary" id="modal-next" onclick="nextStep()"><span id="modal-btn-text">Continuer →</span><div class="spinner" id="modal-spin"></div></button>
+    </div>
+  </div>
+</div>
+
 <script>
-function switchTab(mode,btn){
-  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('form-login').style.display=mode==='login'?'':'none';
-  document.getElementById('form-signup').style.display=mode==='signup'?'':'none';
-}
-function togglePw(id,icon){const el=document.getElementById(id);el.type=el.type==='password'?'text':'password';icon.textContent=el.type==='password'?'👁':'🙈';}
-function checkPw(val){
-  const bars=[1,2,3,4].map(i=>document.getElementById('pb'+i));
-  const label=document.getElementById('pw-label');
-  bars.forEach(b=>{b.className='pw-bar';});
-  if(!val){label.textContent='Entrez un mot de passe';return;}
-  let score=0;
-  if(val.length>=8)score++;if(/[A-Z]/.test(val))score++;if(/[0-9]/.test(val))score++;if(/[^a-zA-Z0-9]/.test(val))score++;
-  const cls=['weak','weak','medium','strong'][score-1]||'weak';
-  const labels=['Très faible','Faible','Moyen','Fort'];
-  for(let i=0;i<score;i++)bars[i].classList.add(cls);
-  label.textContent='Force : '+labels[score-1];
-  label.style.color=cls==='strong'?'var(--green)':cls==='medium'?'#FF8C42':'var(--red)';
-}
-function setLoading(btnId,spinId,loading){
-  document.getElementById(btnId).disabled=loading;
-  document.getElementById(spinId).style.display=loading?'block':'none';
-}
-function updateSlugPreview(val){
-  var clean = val.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
-  document.getElementById('sitename').value = clean;
-  var preview = document.getElementById('slug-preview');
-  if(clean.length > 0){ preview.textContent = '✓ ' + clean + '.quickio.fr'; preview.style.color = 'var(--green)'; }
-  else { preview.textContent = ''; }
-}
-function showError(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
+var _currentStep=1,_selectedTheme='moderne';
+function switchTab(mode,btn){document.querySelectorAll('.auth-tab').forEach(function(t){t.classList.remove('active');});btn.classList.add('active');document.getElementById('form-login').style.display=mode==='login'?'':'none';document.getElementById('form-signup').style.display=mode==='signup'?'':'none';}
+function togglePw(id,icon){var el=document.getElementById(id);el.type=el.type==='password'?'text':'password';icon.textContent=el.type==='password'?'👁':'🙈';}
+function checkPw(val){var bars=[1,2,3,4].map(function(i){return document.getElementById('pb'+i);});var label=document.getElementById('pw-label');bars.forEach(function(b){b.className='pw-bar';});if(!val){label.textContent='Entrez un mot de passe';return;}var score=0;if(val.length>=8)score++;if(/[A-Z]/.test(val))score++;if(/[0-9]/.test(val))score++;if(/[^a-zA-Z0-9]/.test(val))score++;var cls=['weak','weak','medium','strong'][score-1]||'weak';var labels=['Très faible','Faible','Moyen','Fort'];for(var i=0;i<score;i++)bars[i].classList.add(cls);label.textContent='Force : '+labels[score-1];label.style.color=cls==='strong'?'var(--green)':cls==='medium'?'#FF8C42':'var(--red)';}
+function setLoading(btnId,spinId,loading){document.getElementById(btnId).disabled=loading;document.getElementById(spinId).style.display=loading?'block':'none';}
+function updateSlugPreview(val){var clean=val.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');document.getElementById('sitename').value=clean;var preview=document.getElementById('slug-preview');if(clean.length>0){preview.textContent='✓ '+clean+'.quickio.fr';preview.style.color='var(--green)';}else{preview.textContent='';}}
+function showError(id,msg){var el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
 function hideError(id){document.getElementById(id).style.display='none';}
-
-async function doLogin(){
-  hideError('login-error');
-  const email=document.getElementById('login-email').value.trim();
-  const password=document.getElementById('login-pw').value;
-  if(!email||!password){showError('login-error','Veuillez remplir tous les champs.');return;}
-  setLoading('btn-login','login-spin',true);
-  try{
-    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const data=await r.json();
-    if(!r.ok){showError('login-error',data.error||'Erreur de connexion');return;}
+function selectTheme(card){document.querySelectorAll('.theme-card:not(.coming-soon)').forEach(function(c){c.classList.remove('selected');});card.classList.add('selected');_selectedTheme=card.dataset.theme;}
+function openOnboarding(){_currentStep=1;document.getElementById('modal-onboarding').classList.add('active');document.getElementById('step1-body').style.display='';document.getElementById('step2-body').style.display='none';document.getElementById('modal-title').textContent='Complétez votre profil 📋';document.getElementById('modal-sub').textContent="Ces infos permettent de personnaliser votre site et d'optimiser votre référencement local.";document.getElementById('modal-btn-text').textContent='Continuer →';document.getElementById('modal-skip').textContent='Passer';document.getElementById('sdot1').className='step-dot active';document.getElementById('sdot1').textContent='1';document.getElementById('sdot2').className='step-dot pending';document.getElementById('sline1').className='step-line';}
+function skipOnboarding(){if(_currentStep===1){_currentStep=2;showStep2();}else{window.location.href='/dashboard';}}
+function showStep2(){document.getElementById('step1-body').style.display='none';document.getElementById('step2-body').style.display='';document.getElementById('modal-title').textContent='Choisissez votre thème 🎨';document.getElementById('modal-sub').textContent='Sélectionnez le design de votre site vitrine.';document.getElementById('modal-btn-text').textContent='Lancer mon site →';document.getElementById('modal-skip').textContent='Retour';document.getElementById('sdot1').className='step-dot done';document.getElementById('sdot1').textContent='✓';document.getElementById('sline1').className='step-line done';document.getElementById('sdot2').className='step-dot active';}
+async function nextStep(){
+  if(_currentStep===1){
+    hideError('onboard-error');
+    var phone=document.getElementById('ob-phone').value.trim();
+    var address=document.getElementById('ob-address').value.trim();
+    var city=document.getElementById('ob-city').value.trim();
+    var siret=document.getElementById('ob-siret').value.trim();
+    var partners=document.getElementById('ob-partners').value.trim();
+    var google=document.getElementById('ob-google').value.trim();
+    if(!phone){showError('onboard-error','Veuillez renseigner votre numéro de téléphone.');return;}
+    if(!address){showError('onboard-error','Veuillez renseigner votre adresse professionnelle.');return;}
+    document.getElementById('modal-next').disabled=true;document.getElementById('modal-spin').style.display='block';
+    try{
+      var r=await fetch('/api/auth/onboarding',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,address,city,siret,partners,googlePlaceName:google})});
+      var d=await r.json();
+      if(!r.ok){showError('onboard-error',d.error||'Erreur lors de la sauvegarde.');return;}
+      _currentStep=2;showStep2();
+    }catch(e){showError('onboard-error','Erreur réseau.');}
+    finally{document.getElementById('modal-next').disabled=false;document.getElementById('modal-spin').style.display='none';}
+  } else {
+    document.getElementById('modal-next').disabled=true;document.getElementById('modal-spin').style.display='block';
+    try{await fetch('/api/site/design',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({template:_selectedTheme})});}catch(e){}
     window.location.href='/dashboard';
-  }catch(e){showError('login-error','Erreur réseau.');}
-  finally{setLoading('btn-login','login-spin',false);}
-}
-
-async function doSignup(){
-  hideError('signup-error');
-  const firstname=document.getElementById('fname').value.trim();
-  const lastname=document.getElementById('lname').value.trim();
-  const email=document.getElementById('signup-email').value.trim();
-  const password=document.getElementById('signup-pw').value;
-  const metier=document.getElementById('metier').value;
-  const sitename=document.getElementById('sitename').value.trim();
-  const cgu=document.getElementById('cgu').checked;
-  if(!firstname||!email||!password){showError('signup-error','Veuillez remplir tous les champs obligatoires.');return;}
-  if(password.length<8){showError('signup-error','Le mot de passe doit faire au moins 8 caractères.');return;}
-  if(!cgu){showError('signup-error','Veuillez accepter les conditions d\'utilisation.');return;}
-  setLoading('btn-signup','signup-spin',true);
-  try{
-    const r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstname,lastname,email,password,metier,sitename})});
-    const data=await r.json();
-    if(!r.ok){showError('signup-error',data.error||'Erreur lors de la création du compte');return;}
-    window.location.href='/editor';
-  }catch(e){showError('signup-error','Erreur réseau.');}
-  finally{setLoading('btn-signup','signup-spin',false);}
-}
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'){
-    if(document.getElementById('form-login').style.display!=='none')doLogin();
-    else doSignup();
   }
-});
-
-// Check if already logged in
-fetch('/api/auth/me').then(r=>{if(r.ok)window.location.href='/dashboard';}).catch(()=>{});
+}
+async function doLogin(){hideError('login-error');var email=document.getElementById('login-email').value.trim();var password=document.getElementById('login-pw').value;if(!email||!password){showError('login-error','Veuillez remplir tous les champs.');return;}setLoading('btn-login','login-spin',true);try{var r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});var data=await r.json();if(!r.ok){showError('login-error',data.error||'Erreur de connexion');return;}window.location.href='/dashboard';}catch(e){showError('login-error','Erreur réseau.');}finally{setLoading('btn-login','login-spin',false);}}
+async function doSignup(){hideError('signup-error');var firstname=document.getElementById('fname').value.trim();var lastname=document.getElementById('lname').value.trim();var email=document.getElementById('signup-email').value.trim();var password=document.getElementById('signup-pw').value;var metier=document.getElementById('metier').value;var sitename=document.getElementById('sitename').value.trim();var cgu=document.getElementById('cgu').checked;if(!firstname||!email||!password){showError('signup-error','Veuillez remplir tous les champs obligatoires.');return;}if(password.length<8){showError('signup-error','Le mot de passe doit faire au moins 8 caractères.');return;}if(!cgu){showError('signup-error',"Veuillez accepter les conditions d'utilisation.");return;}setLoading('btn-signup','signup-spin',true);try{var r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstname,lastname,email,password,metier,sitename})});var data=await r.json();if(!r.ok){showError('signup-error',data.error||'Erreur lors de la création du compte');return;}openOnboarding();}catch(e){showError('signup-error','Erreur réseau.');}finally{setLoading('btn-signup','signup-spin',false);}}
+document.addEventListener('keydown',function(e){if(e.key==='Enter'){if(document.getElementById('modal-onboarding').classList.contains('active'))return;if(document.getElementById('form-login').style.display!=='none')doLogin();else doSignup();}});
+fetch('/api/auth/me').then(function(r){if(r.ok)window.location.href='/dashboard';}).catch(function(){});
 </script>
 </body>
 </html>
