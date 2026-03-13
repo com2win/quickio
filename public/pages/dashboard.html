@@ -357,7 +357,7 @@ function buildChart() {
 async function togglePublish() {
   // Bloquer si plan gratuit
   const me = await fetch('/api/auth/me').then(r=>r.json()).catch(()=>null);
-  if (me && me.plan === 'free') {
+  if (!me || me.plan === 'Tester' || me.plan === 'free' || me.plan === 'gratuit' || !me.plan) {
     showUpgradeModal();
     return;
   }
