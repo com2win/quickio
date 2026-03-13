@@ -303,6 +303,7 @@ app.get('/api/pro/sites/:websiteId/logo', requireAuth, async function(req, res) 
 
 app.listen(PORT, '0.0.0.0', function() { console.log('Quickio demarre sur http://0.0.0.0:' + PORT); });
 
+app.get('/tarifs', (req,res) => res.sendFile(path.join(__dirname,'..','public','pages','tarifs.html')));
 app.get('/dashboard', function(req, res) {
   res.sendFile(path.join(__dirname, '..', 'public', 'pages', 'dashboard.html'));
 });
