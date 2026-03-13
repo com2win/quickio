@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Tarifs — Quickio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F7F9FF;color:#0A0F1E;min-height:100vh;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:20px 6%;background:white;border-bottom:1px solid #E2E8F8;}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#0A0F1E;text-decoration:none;}
+.nav-logo span{color:#1A6BFF;}
+.nav-back{font-size:.9rem;color:#1A6BFF;text-decoration:none;font-weight:600;}
+.hero{text-align:center;padding:60px 6% 40px;}
+.hero h1{font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;margin-bottom:12px;}
+.hero h1 em{color:#1A6BFF;font-style:normal;}
+.hero p{color:#8892A4;font-size:1.05rem;max-width:500px;margin:0 auto;}
+.toggle{display:flex;align-items:center;justify-content:center;gap:12px;margin:32px auto 0;}
+.toggle span{font-size:.9rem;font-weight:600;color:#8892A4;}
+.toggle span.active{color:#0A0F1E;}
+.toggle-btn{width:48px;height:26px;background:#1A6BFF;border-radius:99px;position:relative;cursor:pointer;border:none;outline:none;}
+.toggle-btn::after{content:'';position:absolute;width:20px;height:20px;background:white;border-radius:50%;top:3px;left:3px;transition:.2s;}
+.toggle-btn.annual::after{left:25px;}
+.badge-save{background:#E8F0FF;color:#1A6BFF;font-size:.75rem;font-weight:700;padding:3px 8px;border-radius:99px;}
+.plans{display:flex;gap:24px;max-width:1000px;margin:40px auto;padding:0 6%;flex-wrap:wrap;justify-content:center;}
+.plan{background:white;border-radius:20px;padding:36px 32px;flex:1;min-width:260px;max-width:320px;border:2px solid #E2E8F8;position:relative;}
+.plan.popular{border-color:#1A6BFF;box-shadow:0 8px 40px rgba(26,107,255,.12);}
+.plan-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#1A6BFF;color:white;font-size:.75rem;font-weight:700;padding:4px 14px;border-radius:99px;white-space:nowrap;}
+.plan-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:8px;}
+.plan-price{font-family:'Syne',sans-serif;font-weight:800;font-size:2.4rem;margin:16px 0 4px;}
+.plan-price span{font-size:1rem;font-weight:500;color:#8892A4;}
+.plan-annual{font-size:.82rem;color:#8892A4;margin-bottom:20px;min-height:20px;}
+.plan-desc{font-size:.88rem;color:#8892A4;margin-bottom:24px;line-height:1.6;}
+.plan-features{list-style:none;margin-bottom:28px;}
+.plan-features li{font-size:.88rem;padding:8px 0;border-bottom:1px solid #F0F4FF;display:flex;align-items:flex-start;gap:8px;}
+.plan-features li:last-child{border:none;}
+.plan-features li::before{content:'✓';color:#1A6BFF;font-weight:700;flex-shrink:0;}
+.plan-features li.no::before{content:'✗';color:#CBD5E1;}
+.plan-features li.no{color:#CBD5E1;}
+.plan-option{background:#F7F9FF;border-radius:10px;padding:12px 14px;margin-bottom:24px;font-size:.83rem;color:#3A4260;}
+.plan-option strong{color:#0A0F1E;}
+.btn-plan{width:100%;padding:14px;border-radius:12px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;border:none;transition:.2s;}
+.btn-plan.primary{background:#1A6BFF;color:white;}
+.btn-plan.primary:hover{background:#1558d6;}
+.btn-plan.secondary{background:#F7F9FF;color:#0A0F1E;border:1.5px solid #E2E8F8;}
+.btn-plan.ghost{background:white;color:#1A6BFF;border:1.5px solid #1A6BFF;}
+.faq{max-width:680px;margin:20px auto 60px;padding:0 6%;}
+.faq h2{font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;margin-bottom:24px;text-align:center;}
+.faq-item{background:white;border-radius:14px;padding:20px 24px;margin-bottom:12px;border:1px solid #E2E8F8;}
+.faq-item summary{font-weight:600;font-size:.93rem;list-style:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.faq-item summary::after{content:'＋';color:#1A6BFF;font-size:1.1rem;}
+.faq-item[open] summary::after{content:'－';}
+.faq-item p{margin-top:12px;font-size:.87rem;color:#8892A4;line-height:1.7;}
+.modal{display:none;position:fixed;inset:0;background:rgba(10,15,30,.5);backdrop-filter:blur(4px);z-index:100;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:white;border-radius:20px;padding:40px;max-width:440px;width:100%;text-align:center;}
+.modal-box h3{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:8px;}
+.modal-box p{color:#8892A4;font-size:.9rem;margin-bottom:24px;line-height:1.6;}
+.modal-box input{width:100%;padding:12px 16px;border:1.5px solid #E2E8F8;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;margin-bottom:12px;outline:none;}
+.modal-actions{display:flex;gap:10px;}
+footer{text-align:center;padding:24px;color:#8892A4;font-size:.82rem;border-top:1px solid #E2E8F8;}
+@media(max-width:700px){.plans{flex-direction:column;align-items:center;}.hero h1{font-size:1.8rem;}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/" class="nav-logo">Quick<span>io</span></a>
+  <a href="/dashboard" class="nav-back">← Mon dashboard</a>
+</nav>
+<div class="hero">
+  <h1>Choisissez votre <em>offre</em></h1>
+  <p>Créez votre site vitrine professionnel et attirez plus de clients en ligne.</p>
+  <div class="toggle">
+    <span id="lbl-monthly" class="active">Mensuel</span>
+    <button class="toggle-btn" id="billing-toggle" onclick="toggleBilling()"></button>
+    <span id="lbl-annual">Annuel</span>
+    <span class="badge-save" id="save-badge" style="display:none;">−17%</span>
+  </div>
+</div>
+<div class="plans">
+  <div class="plan">
+    <div class="plan-name">Tester</div>
+    <div class="plan-price">0€<span>/24h</span></div>
+    <div class="plan-annual"></div>
+    <div class="plan-desc">Essayez Quickio sans engagement. Votre site en prévisualisation pendant 24h.</div>
+    <ul class="plan-features">
+      <li>Site vitrine généré par IA</li>
+      <li>6 services personnalisés</li>
+      <li>Prévisualisation uniquement</li>
+      <li>Avis Google intégrés</li>
+      <li>FAQ générée par IA</li>
+      <li>Logos partenaires automatiques</li>
+      <li>Photos générées par IA</li>
+      <li class="no">Publication en ligne</li>
+      <li class="no">Domaine personnalisé</li>
+      <li class="no">Support</li>
+    </ul>
+    <button class="btn-plan ghost" onclick="window.location='/dashboard'">Mon espace →</button>
+  </div>
+  <div class="plan popular">
+    <div class="plan-badge">Le plus populaire</div>
+    <div class="plan-name">Start</div>
+    <div class="plan-price" id="price-start">9€<span>/mois</span></div>
+    <div class="plan-annual" id="annual-start"></div>
+    <div class="plan-desc">Tout ce qu'il faut pour être visible en ligne et décrocher plus de clients.</div>
+    <ul class="plan-features">
+      <li>Site vitrine publié en ligne</li>
+      <li>6 services personnalisés</li>
+      <li>Sous-domaine quickio.fr inclus</li>
+      <li>Avis Google intégrés</li>
+      <li>FAQ générée par IA</li>
+      <li>Logos partenaires automatiques</li>
+      <li>Photos générées par IA</li>
+      <li>Statistiques</li>
+      <li>Référencement sur votre commune</li>
+      <li>Support par email</li>
+      <li class="no">Domaine .fr personnalisé</li>
+    </ul>
+    <div class="plan-option"><strong>Option domaine .fr</strong> — +5€/mois<br>Publiez sur votre propre adresse (ex: martin-plombier.fr)</div>
+    <button class="btn-plan primary" onclick="openModal('Start')">Choisir Start →</button>
+  </div>
+  <div class="plan">
+    <div class="plan-name">Max</div>
+    <div class="plan-price" id="price-max">18€<span>/mois</span></div>
+    <div class="plan-annual" id="annual-max"></div>
+    <div class="plan-desc">La solution complète pour les pros qui veulent dominer leur marché local.</div>
+    <ul class="plan-features">
+      <li>Site vitrine publié en ligne</li>
+      <li>6 services personnalisés</li>
+      <li>Sous-domaine quickio.fr inclus</li>
+      <li>Avis Google intégrés</li>
+      <li>FAQ générée par IA</li>
+      <li>Logos partenaires automatiques</li>
+      <li>Photos générées par IA</li>
+      <li>Statistiques</li>
+      <li>Référencement sur votre commune</li>
+      <li><strong>🎯 Référencement local 30km</strong></li>
+      <li>Support par email &amp; téléphone</li>
+      <li class="no">Domaine .fr personnalisé</li>
+    </ul>
+    <div class="plan-option"><strong>Option domaine .fr</strong> — +5€/mois<br>Publiez sur votre propre adresse (ex: martin-plombier.fr)</div>
+    <button class="btn-plan primary" onclick="openModal('Max')">Choisir Max →</button>
+  </div>
+</div>
+<div class="faq">
+  <h2>Questions fréquentes</h2>
+  <details class="faq-item">
+    <summary>Puis-je changer d'offre à tout moment ?</summary>
+    <p>Oui, vous pouvez passer de Start à Max (ou l'inverse) à tout moment. Le changement prend effet immédiatement.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Comment fonctionne l'option domaine .fr ?</summary>
+    <p>Nous enregistrons votre nom de domaine .fr et le configurons automatiquement sur votre site Quickio. 5€/mois en supplément de votre offre.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Que se passe-t-il après les 24h d'essai ?</summary>
+    <p>Votre site passe hors ligne automatiquement. Toutes vos données sont conservées — il suffit de choisir une offre pour le republier.</p>
+  </details>
+  <details class="faq-item">
+    <summary>Y a-t-il un engagement ?</summary>
+    <p>Aucun engagement. Vous pouvez résilier à tout moment depuis votre espace. L'offre annuelle est remboursable au prorata.</p>
+  </details>
+</div>
+<footer>© 2025 Quickio — Tous droits réservés</footer>
+<div class="modal" id="order-modal">
+  <div class="modal-box">
+    <div style="font-size:2.5rem;margin-bottom:12px;">🎉</div>
+    <h3 id="modal-title">Parfait !</h3>
+    <p>Laissez-nous votre email et nous vous contactons dans les 24h pour activer votre offre.</p>
+    <input type="email" id="modal-email" placeholder="votre@email.fr"/>
+    <input type="text" id="modal-phone" placeholder="Votre téléphone (optionnel)"/>
+    <div class="modal-actions">
+      <button class="btn-plan secondary" style="flex:1" onclick="closeModal()">Annuler</button>
+      <button class="btn-plan primary" style="flex:2" onclick="submitOrder()">Être contacté →</button>
+    </div>
+  </div>
+</div>
+<script>
+let isAnnual=false,selectedPlan='';
+function toggleBilling(){
+  isAnnual=!isAnnual;
+  document.getElementById('billing-toggle').classList.toggle('annual',isAnnual);
+  document.getElementById('lbl-monthly').classList.toggle('active',!isAnnual);
+  document.getElementById('lbl-annual').classList.toggle('active',isAnnual);
+  document.getElementById('save-badge').style.display=isAnnual?'inline':'none';
+  document.getElementById('price-start').innerHTML=isAnnual?'7,50€<span>/mois</span>':'9€<span>/mois</span>';
+  document.getElementById('annual-start').textContent=isAnnual?'soit 90€/an — économisez 18€':'';
+  document.getElementById('price-max').innerHTML=isAnnual?'15€<span>/mois</span>':'18€<span>/mois</span>';
+  document.getElementById('annual-max').textContent=isAnnual?'soit 180€/an — économisez 36€':'';
+}
+function openModal(plan){
+  selectedPlan=plan+(isAnnual?' Annuel':' Mensuel');
+  document.getElementById('modal-title').textContent='Parfait, vous avez choisi '+plan+' !';
+  document.getElementById('order-modal').style.display='flex';
+  fetch('/api/auth/me').then(r=>r.json()).then(me=>{if(me&&me.email)document.getElementById('modal-email').value=me.email;}).catch(()=>{});
+}
+function closeModal(){document.getElementById('order-modal').style.display='none';}
+async function submitOrder(){
+  const email=document.getElementById('modal-email').value.trim();
+  if(!email){alert('Veuillez entrer votre email');return;}
+  const phone=document.getElementById('modal-phone').value.trim();
+  await fetch('/api/contact/upgrade',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,phone,plan:selectedPlan})}).catch(()=>{});
+  document.querySelector('.modal-box').innerHTML=`<div style="font-size:3rem;margin-bottom:16px;">✅</div><h3 style="font-family:Syne,sans-serif;font-weight:800;margin-bottom:8px;">Demande envoyée !</h3><p style="color:#8892A4;font-size:.9rem;line-height:1.6;margin-bottom:24px;">Nous vous contactons dans les 24h pour activer votre offre <strong>${selectedPlan}</strong>.</p><button class="btn-plan primary" onclick="window.location='/dashboard'">Retour au dashboard →</button>`;
+}
+</script>
+</body>
+</html>
