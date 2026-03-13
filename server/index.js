@@ -2,9 +2,9 @@ process.on("uncaughtException",function(e){console.error("[crash]",e.message);})
 process.on("unhandledRejection",function(e){console.error("[reject]",e&&e.message);});
 const express = require('express');
 const rateLimit = require('express-rate-limit');
-const authLimiter = rateLimit({ windowMs: 15*60*1000, max: 10, message: {error: 'Trop de tentatives, réessayez dans 15 minutes.'}, standardHeaders: true, legacyHeaders: false });
-const registerLimiter = rateLimit({ windowMs: 60*60*1000, max: 5, message: {error: 'Trop d\'inscriptions depuis cette IP, réessayez dans 1 heure.'}, standardHeaders: true, legacyHeaders: false });
-const apiLimiter = rateLimit({ windowMs: 60*1000, max: 60, message: {error: 'Trop de requêtes.'}, standardHeaders: true, legacyHeaders: false });
+const authLimiter = rateLimit({ windowMs: 15*60*1000, max: 5, message: {error: 'Trop de tentatives, réessayez dans 15 minutes.'}, standardHeaders: true, legacyHeaders: false });
+const registerLimiter = rateLimit({ windowMs: 60*60*1000, max: 2, message: {error: 'Trop d\'inscriptions depuis cette IP, réessayez dans 1 heure.'}, standardHeaders: true, legacyHeaders: false });
+const apiLimiter = rateLimit({ windowMs: 60*1000, max: 5, message: {error: 'Trop de requêtes.'}, standardHeaders: true, legacyHeaders: false });
 const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
 const bcrypt = require('bcryptjs');
