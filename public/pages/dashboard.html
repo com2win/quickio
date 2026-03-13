@@ -355,6 +355,12 @@ function buildChart() {
 }
 
 async function togglePublish() {
+  // Bloquer si plan gratuit
+  const me = await fetch('/api/auth/me').then(r=>r.json()).catch(()=>null);
+  if (me && me.plan === 'free') {
+    showUpgradeModal();
+    return;
+  }
   const r = await fetch('/api/site/publish', { method: 'POST' });
   if (r.ok) {
     const data = await r.json();
@@ -363,6 +369,10 @@ async function togglePublish() {
     const subdomain = siteData.domain?.subdomain || siteData.slug;
     showToast(data.published ? `🚀 Site publié ! → ${subdomain}.quickio.fr` : 'Site dépublié');
   }
+}
+
+function showUpgradeModal() {
+  document.getElementById('upgrade-modal').style.display = 'flex';
 }
 
 function copyLink() {
@@ -391,5 +401,21 @@ function showToast(msg) {
 
 init();
 </script>
+
+<div id="upgrade-modal" style="display:none;position:fixed;inset:0;background:rgba(10,15,30,.6);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:20px;width:100%;max-width:480px;padding:40px;text-align:center;box-shadow:0 24px 80px rgba(10,15,30,.2);">
+    <div style="font-size:3rem;margin-bottom:16px;">🚀</div>
+    <h2 style="font-family:Syne,sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:8px;">Publiez votre site</h2>
+    <p style="color:#8892A4;font-size:.95rem;line-height:1.6;margin-bottom:24px;">La publication est disponible dès le plan <strong>Pro</strong>. Votre site est visible en prévisualisation pendant votre essai gratuit de 24h.</p>
+    <div style="background:#F7F9FF;border-radius:14px;padding:20px;margin-bottom:24px;text-align:left;">
+      <div style="font-size:.85rem;font-weight:700;color:#0A0F1E;margin-bottom:12px;">✨ Plan Pro — 19,99€/mois</div>
+      <div style="font-size:.82rem;color:#3A4260;line-height:2;">✅ Publication illimitée<br>✅ Domaine personnalisé<br>✅ Statistiques avancées<br>✅ Avis Google intégrés<br>✅ Support prioritaire</div>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <button onclick="document.getElementById('upgrade-modal').style.display='none'" style="flex:1;padding:12px;background:#F7F9FF;border:1.5px solid #E2E8F8;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;">Plus tard</button>
+      <a href="/pricing" style="flex:2;padding:12px;background:#1A6BFF;color:white;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;">Passer au Pro →</a>
+    </div>
+  </div>
+</div>
 </body>
 </html>
