@@ -40,16 +40,22 @@ async function generateImages(websiteId, trade) {
         console.error('[UNSPLASH] Aucun résultat pour:', query);
         return null;
       }
-      // Prendre une image au hasard parmi les 5 premiers résultats
       const idx = Math.floor(Math.random() * Math.min(5, searchData.results.length));
-      const imageUrl = searchData.results[idx].urls.regular;
+      const photo = searchData.results[idx];
+      const imageUrl = photo.urls.regular;
       const imgResp = await fetch(imageUrl);
       if (!imgResp.ok) throw new Error('Download failed: ' + imgResp.status);
       const buffer = Buffer.from(await imgResp.arrayBuffer());
       const filepath = path.join(uploadDir, filename);
       fs.writeFileSync(filepath, buffer);
       console.log('[UNSPLASH] Image sauvegardée:', filename);
-      return '/uploads/' + filename;
+      return {
+        path: '/uploads/' + filename,
+        photoId: photo.id,
+        author: photo.user.name,
+        authorUrl: 'https://unsplash.com/@' + photo.user.username + '?utm_source=quickio&utm_medium=referral',
+        photoUrl: photo.links.html + '?utm_source=quickio&utm_medium=referral'
+      };
     } catch(e) {
       console.error('[UNSPLASH] Erreur pour', query, ':', e.message);
       return null;
@@ -89,20 +95,27 @@ async function generateImages(websiteId, trade) {
       } catch(e) { console.error('[UNSPLASH] Groq error:', e.message); }
     }
 
+    // Supprimer anciens crédits
+    await queryOne('DELETE FROM image_credits WHERE website_id=$1', [websiteId]);
+
     // Image hero
-    const heroPath = await searchAndDownload(heroQueryEn, 'hero-' + websiteId + '.jpg');
-    if (heroPath) {
-      await queryOne('UPDATE websites SET hero_image_url=$1 WHERE id=$2', [heroPath, websiteId]);
-      console.log('[UNSPLASH] Hero généré:', heroPath);
+    const heroResult = await searchAndDownload(heroQueryEn, 'hero-' + websiteId + '.jpg');
+    if (heroResult) {
+      await queryOne('UPDATE websites SET hero_image_url=$1 WHERE id=$2', [heroResult.path, websiteId]);
+      await queryOne('INSERT INTO image_credits (website_id, image_type, unsplash_photo_id, unsplash_author, unsplash_author_url, unsplash_photo_url) VALUES ($1,$2,$3,$4,$5,$6)',
+        [websiteId, 'hero', heroResult.photoId, heroResult.author, heroResult.authorUrl, heroResult.photoUrl]);
+      console.log('[UNSPLASH] Hero généré:', heroResult.path);
     }
 
     // Images services
     for (let i = 0; i < svcRows.length; i++) {
       const svc = svcRows[i];
       const svcQuery = svcQueriesEn[i] || svc.title + ' professional';
-      const svcPath = await searchAndDownload(svcQuery, 'service-' + svc.id + '.jpg');
-      if (svcPath) {
-        await queryOne('UPDATE services_offered SET image_path=$1 WHERE id=$2', [svcPath, svc.id]);
+      const svcResult = await searchAndDownload(svcQuery, 'service-' + svc.id + '.jpg');
+      if (svcResult) {
+        await queryOne('UPDATE services_offered SET image_path=$1 WHERE id=$2', [svcResult.path, svc.id]);
+        await queryOne('INSERT INTO image_credits (website_id, image_type, entity_id, unsplash_photo_id, unsplash_author, unsplash_author_url, unsplash_photo_url) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+          [websiteId, 'service', svc.id, svcResult.photoId, svcResult.author, svcResult.authorUrl, svcResult.photoUrl]);
         console.log('[UNSPLASH] Service généré:', svc.title, '->', svcQuery);
       }
     }
@@ -112,6 +125,62 @@ async function generateImages(websiteId, trade) {
   }
 }
 
+
+async function generateImagesDALLE(websiteId, trade, services) {
+  const OPENAI_KEY = process.env.OPENAI_API_KEY;
+  if (!OPENAI_KEY) return console.error('[DALLE] OPENAI_API_KEY manquante');
+  const fs = require('fs');
+  const path = require('path');
+  const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+  async function dalleGenerate(prompt) {
+    const resp = await fetch('https://api.openai.com/v1/images/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + OPENAI_KEY },
+      body: JSON.stringify({ model: 'dall-e-3', prompt: prompt, n: 1, size: '1024x1024', quality: 'standard' })
+    });
+    const data = await resp.json();
+    if (!data.data || !data.data[0]) throw new Error('DALLE no data: ' + JSON.stringify(data));
+    return data.data[0].url;
+  }
+
+  async function downloadImage(url, filename) {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('Download failed: ' + resp.status);
+    const buffer = Buffer.from(await resp.arrayBuffer());
+    const filepath = path.join(uploadDir, filename);
+    fs.writeFileSync(filepath, buffer);
+    return '/uploads/' + filename;
+  }
+
+  try {
+    // Image hero
+    const heroPrompt = 'Photographie professionnelle ultra-réaliste d un(e) ' + (trade || 'professionnel') + ' en action sur un chantier ou en intervention, lumière naturelle cinématique, style magazine, très haute qualité, sans texte ni logo';
+    const heroUrl = await dalleGenerate(heroPrompt);
+    const heroPath = await downloadImage(heroUrl, 'hero-' + websiteId + '.jpg');
+    const { Pool } = require('pg');
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    await pool.query('UPDATE websites SET hero_image_url=$1 WHERE id=$2', [heroPath, websiteId]);
+    console.log('[DALLE] Hero généré:', heroPath);
+
+    // Images services (max 3 pour limiter les coûts)
+    const svcRows = await pool.query('SELECT id, title FROM services_offered WHERE website_id=$1 ORDER BY display_order ASC LIMIT 3', [websiteId]);
+    for (const svc of svcRows.rows) {
+      try {
+        const svcPrompt = 'Photographie professionnelle ultra-réaliste illustrant le service "' + svc.title + '" pour un(e) ' + (trade || 'professionnel') + ', style photo commerciale moderne, lumière douce, sans texte ni logo';
+        const svcUrl = await dalleGenerate(svcPrompt);
+        const svcPath = await downloadImage(svcUrl, 'service-' + svc.id + '.jpg');
+        await pool.query('UPDATE services_offered SET image_path=$1 WHERE id=$2', [svcPath, svc.id]);
+        console.log('[DALLE] Service généré:', svcPath);
+      } catch(e) { console.error('[DALLE] Service image error:', svc.title, e.message); }
+    }
+    await pool.end();
+    console.log('[DALLE] Toutes les images générées pour', websiteId);
+  } catch(e) {
+    console.error('[DALLE] Erreur globale:', e.message);
+  }
+}
 
 const WHITELIST_IPS = ['37.67.176.255', '152.53.248.244'];
 const skipIfWhitelisted = (req) => WHITELIST_IPS.includes(req.ip || req.connection.remoteAddress);
@@ -166,7 +235,8 @@ app.use(function(req, res, next) { var h=req.hostname||''; var p=h.split('.'); i
 app.use(session({ store: new PgSession({ pool: pool, tableName: 'sessions', createTableIfMissing: false }), secret: process.env.SESSION_SECRET || 'quickio-secret-dev', resave: false, saveUninitialized: false, cookie: { secure: false, httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 } }));
 function requireAuth(req, res, next) { if (!req.session.professionalId) return res.status(401).json({ error: 'Non authentifie' }); next(); }
 function getSubdomain(req) { var host=req.hostname||''; var parts=host.split('.'); if(parts.length>=3 && host.endsWith('quickio.fr')){ var sub=parts.slice(0,parts.length-2).join('.'); if(sub!=='www') return sub; } return null; }
-app.post('/api/auth/register', registerLimiter, async function(req, res) { try { var b = req.body; if (!b.firstname || !b.email || !b.password) return res.status(400).json({ error: 'Champs manquants' }); var existing = await queryOne('SELECT id FROM professionals WHERE email = $1', [b.email.toLowerCase()]); if (existing) return res.status(409).json({ error: 'Email deja utilise' }); var hash = await bcrypt.hash(b.password, 10); var trade = b.metier || b.trade || null; var pro = await queryOne('INSERT INTO professionals (firstname, lastname, email, password_hash, trade, plan) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *', [b.firstname.trim(), (b.lastname||'').trim(), b.email.toLowerCase().trim(), hash, trade, 'Tester']); var baseSlug; if (b.sitename && b.sitename.trim()) { baseSlug = b.sitename.trim().toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''); } else { baseSlug = (b.firstname + '-' + (trade || 'pro')).toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, ''); } var slug = baseSlug; var slugExists = await queryOne('SELECT id FROM websites WHERE slug=$1', [slug]); if (slugExists) { slug = baseSlug + '-' + pro.id.slice(0,4); var slugExists2 = await queryOne('SELECT id FROM websites WHERE slug=$1', [slug]); if (slugExists2) return res.status(409).json({error:'Ce nom de site est deja pris, essayez un autre.'}); } var w = await queryOne('INSERT INTO websites (professional_id, slug, business_name, tagline, description, contact_email, cta_text, seo_title, seo_description, seo_keywords) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *', [pro.id, slug, b.firstname+' '+(b.lastname||''), 'Professionnel a votre service', 'Bonjour ! Je suis '+b.firstname+', '+(trade||'professionnel')+'. Contactez-moi pour un devis gratuit.', b.email, 'Prendre RDV gratuitement', b.firstname+' '+(trade||'')+' - Site professionnel', 'Site professionnel de '+b.firstname, trade||'']); var GROQ_KEY = process.env.GROQ_API_KEY; if (GROQ_KEY) { try { var aiPrompt = 'Tu es un copywriter expert francais. Pour un(e) '+(trade||'professionnel(le)')+' nomme(e) "'+b.firstname+' '+(b.lastname||'')+'"' +', genere du contenu pour son site vitrine. Reponds UNIQUEMENT en JSON valide sans backticks avec: ' +'{ "tagline": "phrase accroche courte", "description": "description 2-3 phrases pro vouvoiement", ' +'"services": [{ "emoji": "emoji", "title": "nom du service", "description": "description 2-3 phrases" }] } ' +'Genere exactement 6 services pertinents pour ce metier. Ton professionnel et chaleureux, vouvoiement.'; var aiResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY}, body:JSON.stringify({model:'llama-3.3-70b-versatile', messages:[{role:'user',content:aiPrompt}], max_tokens:1024, temperature:0.7})}); var aiData = await aiResp.json(); if (aiData.choices && aiData.choices[0]) { var aiText = aiData.choices[0].message.content; aiText = aiText.replace(/```json/g,'').replace(/```/g,'').trim(); var aiParsed = JSON.parse(aiText); if (aiParsed.tagline) { await queryOne('UPDATE websites SET tagline=$1, description=$2, published=false, status=$4 WHERE id=$3', [aiParsed.tagline, aiParsed.description||'', w.id, 'draft']); } if (aiParsed.services && aiParsed.services.length) { for (var si=0; si<aiParsed.services.length; si++) { var svc = aiParsed.services[si]; await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description,ai_generated) VALUES ($1,$2,$3,$4,$5,true)', [w.id, si, svc.emoji||'\u26a1', svc.title||'Service', svc.description||'']); } } else { await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,0,$2,$3,$4)', [w.id,'\u26a1','Service 1','Description de votre premier service']); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,1,$2,$3,$4)', [w.id,'\ud83d\udd27','Service 2','Description de votre deuxieme service']); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,2,$2,$3,$4)', [w.id,'\ud83c\udfe0','Service 3','Description de votre troisieme service']); } } } catch(aiErr) { console.error('AI generation error:', aiErr); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,0,$2,$3,$4)', [w.id,'\u26a1','Service 1','Description de votre premier service']); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,1,$2,$3,$4)', [w.id,'\ud83d\udd27','Service 2','Description de votre deuxieme service']); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,2,$2,$3,$4)', [w.id,'\ud83c\udfe0','Service 3','Description de votre troisieme service']); await queryOne('UPDATE websites SET published=false, status=$2 WHERE id=$1', [w.id, 'published']); } } else { await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,0,$2,$3,$4)', [w.id,'\u26a1','Service 1','Description de votre premier service']); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,1,$2,$3,$4)', [w.id,'\ud83d\udd27','Service 2','Description de votre deuxieme service']); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,2,$2,$3,$4)', [w.id,'\ud83c\udfe0','Service 3','Description de votre troisieme service']); await queryOne('UPDATE websites SET published=false, status=$2 WHERE id=$1', [w.id, 'draft']); } const emailToken = require('crypto').randomBytes(32).toString('hex'); const tokenExpires = new Date(Date.now() + 24*60*60*1000); await queryOne('UPDATE professionals SET email_token=$1, email_token_expires=$2 WHERE id=$3', [emailToken, tokenExpires, pro.id]); sendVerificationEmail(pro.email, pro.firstname, emailToken).catch(e => console.error('[EMAIL ERROR]', e));
+app.post('/api/auth/register', registerLimiter, async function(req, res) { try { var b = req.body; if (!b.firstname || !b.email || !b.password) return res.status(400).json({ error: 'Champs manquants' }); var existing = await queryOne('SELECT id FROM professionals WHERE email = $1', [b.email.toLowerCase()]); if (existing) return res.status(409).json({ error: 'Email deja utilise' }); var hash = await bcrypt.hash(b.password, 10); var trade = b.metier || b.trade || null; var siret = b.siret || ''; var pro = await queryOne('INSERT INTO professionals (firstname, lastname, email, password_hash, trade, plan, siret) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *', [b.firstname.trim(), (b.lastname||'').trim(), b.email.toLowerCase().trim(), hash, trade, 'Tester', siret]); var baseSlug; if (b.sitename && b.sitename.trim()) { baseSlug = b.sitename.trim().toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''); } else { baseSlug = (b.firstname + '-' + (trade || 'pro')).toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, ''); } var slug = baseSlug; var slugExists = await queryOne('SELECT id FROM websites WHERE slug=$1', [slug]); if (slugExists) { slug = baseSlug + '-' + pro.id.slice(0,4); var slugExists2 = await queryOne('SELECT id FROM websites WHERE slug=$1', [slug]); if (slugExists2) return res.status(409).json({error:'Ce nom de site est deja pris, essayez un autre.'}); } var w = await queryOne('INSERT INTO websites (professional_id, slug, business_name, tagline, description, contact_email, cta_text, seo_title, seo_description, seo_keywords) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *', [pro.id, slug, b.firstname+' '+(b.lastname||''), 'Professionnel a votre service', 'Bonjour ! Je suis '+b.firstname+', '+(trade||'professionnel')+'. Contactez-moi pour un devis gratuit.', b.email, 'Prendre RDV gratuitement', b.firstname+' '+(trade||'')+' - Site professionnel', 'Site professionnel de '+b.firstname, trade||'']); var GROQ_KEY = process.env.GROQ_API_KEY; if (GROQ_KEY) { try { var aiPrompt = 'Tu es un copywriter expert francais. Pour un(e) '+(trade||'professionnel(le)')+' nomme(e) "'+b.firstname+' '+(b.lastname||'')+'"' +', genere du contenu pour son site vitrine. Reponds UNIQUEMENT en JSON valide sans backticks avec: ' +'{ "tagline": "phrase accroche courte", "description": "description 2-3 phrases pro vouvoiement", ' +'"services": [{ "emoji": "emoji", "title": "nom du service", "description": "description 2-3 phrases" }] } ' +'Genere exactement 6 services pertinents pour ce metier. Ton professionnel et chaleureux, vouvoiement.'; var aiResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY}, body:JSON.stringify({model:'llama-3.3-70b-versatile', messages:[{role:'user',content:aiPrompt}], max_tokens:1024, temperature:0.7})}); var aiData = await aiResp.json(); if (aiData.choices && aiData.choices[0]) { var aiText = aiData.choices[0].message.content; aiText = aiText.replace(/```json/g,'').replace(/```/g,'').trim(); var aiParsed = JSON.parse(aiText); if (aiParsed.tagline) { await queryOne('UPDATE websites SET tagline=$1, description=$2, published=false, status=$4 WHERE id=$3', [aiParsed.tagline, aiParsed.description||'', w.id, 'draft']); } if (aiParsed.services && aiParsed.services.length) { for (var si=0; si<aiParsed.services.length; si++) { var svc = aiParsed.services[si]; await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description,ai_generated) VALUES ($1,$2,$3,$4,$5,true)', [w.id, si, svc.emoji||'\u26a1', svc.title||'Service', svc.description||'']); } } else { await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,0,$2,$3,$4)', [w.id,'\u26a1','Service 1','Description de votre premier service']); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,1,$2,$3,$4)', [w.id,'\ud83d\udd27','Service 2','Description de votre deuxieme service']); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,2,$2,$3,$4)', [w.id,'\ud83c\udfe0','Service 3','Description de votre troisieme service']); } } } catch(aiErr) { console.error('AI generation error:', aiErr); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,0,$2,$3,$4)', [w.id,'\u26a1','Service 1','Description de votre premier service']); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,1,$2,$3,$4)', [w.id,'\ud83d\udd27','Service 2','Description de votre deuxieme service']); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,2,$2,$3,$4)', [w.id,'\ud83c\udfe0','Service 3','Description de votre troisieme service']); await queryOne('UPDATE websites SET published=false, status=$2 WHERE id=$1', [w.id, 'published']); } } else { await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,0,$2,$3,$4)', [w.id,'\u26a1','Service 1','Description de votre premier service']); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,1,$2,$3,$4)', [w.id,'\ud83d\udd27','Service 2','Description de votre deuxieme service']); await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description) VALUES ($1,2,$2,$3,$4)', [w.id,'\ud83c\udfe0','Service 3','Description de votre troisieme service']); await queryOne('UPDATE websites SET published=false, status=$2 WHERE id=$1', [w.id, 'draft']); } const emailToken = require('crypto').randomBytes(32).toString('hex'); const tokenExpires = new Date(Date.now() + 24*60*60*1000); await queryOne('UPDATE professionals SET email_token=$1, email_token_expires=$2 WHERE id=$3', [emailToken, tokenExpires, pro.id]); sendVerificationEmail(pro.email, pro.firstname, emailToken).catch(e => console.error('[EMAIL ERROR]', e));
+  generateImagesDALLE(w.id, trade, []).catch(e => console.error('[DALLE ERROR]', e));
   generateImages(w.id, trade).catch(e => console.error('[IMAGES ERROR]', e)); req.session.professionalId = pro.id; req.session.siteId = w.id; res.json({ success: true, user: { id: pro.id, firstname: pro.firstname, email: pro.email, plan: pro.plan, emailVerified: false }, siteId: w.id }); } catch (err) { console.error(err); res.status(500).json({ error: 'Erreur serveur' }); } });
 
 
@@ -484,6 +554,71 @@ app.get('/api/auth/onboarding-status', requireAuth, async function(req, res) {
     var pro = await queryOne('SELECT onboarding_done FROM professionals WHERE id=$1', [req.session.professionalId]);
     res.json({ done: pro ? pro.onboarding_done : false });
   } catch(err) { res.status(500).json({ error: 'Erreur serveur' }); }
+});
+
+app.get('/mentions-legales', async function(req, res) {
+  var sub = getSubdomain(req);
+  if (!sub) return res.status(404).send('<h1>Page introuvable</h1>');
+  try {
+    var w = await queryOne('SELECT * FROM websites WHERE slug=$1', [sub]);
+    if (!w) return res.status(404).send('<h1>Site introuvable</h1>');
+    var pro = await queryOne('SELECT * FROM professionals WHERE id=$1', [w.professional_id]);
+    if (!pro) return res.status(404).send('<h1>Site introuvable</h1>');
+    var credits = await queryAll('SELECT * FROM image_credits WHERE website_id=$1', [w.id]);
+
+    var creditsHtml = '';
+    if (credits.length > 0) {
+      creditsHtml = '<h2>Crédits photographiques</h2><p>Certaines photographies utilisées sur ce site proviennent de <a href="https://unsplash.com/?utm_source=quickio&utm_medium=referral" target="_blank">Unsplash</a>.</p><ul>';
+      for (var c of credits) {
+        creditsHtml += '<li>Photo par <a href="' + c.unsplash_author_url + '" target="_blank">' + c.unsplash_author + '</a> — <a href="' + c.unsplash_photo_url + '" target="_blank">voir sur Unsplash</a></li>';
+      }
+      creditsHtml += '</ul>';
+    }
+
+    var color = w.brand_color || '#1A6BFF';
+    res.send(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mentions légales — ${w.business_name}</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:DM Sans,sans-serif;color:#0A0F1E;line-height:1.7;background:#F7F9FF;}
+.header{background:${color};color:white;padding:40px 6%;}.header h1{font-family:Syne,sans-serif;font-size:1.8rem;font-weight:800;}
+.container{max-width:800px;margin:0 auto;padding:40px 20px;}
+h2{font-family:Syne,sans-serif;font-size:1.2rem;font-weight:700;margin:32px 0 12px;color:${color};}
+p,li{color:#444;margin-bottom:10px;}ul{padding-left:20px;}a{color:${color};}
+.back{display:inline-block;margin-top:32px;color:${color};font-weight:600;text-decoration:none;}
+footer{text-align:center;padding:24px;color:#888;font-size:.8rem;border-top:1px solid #eee;margin-top:40px;}</style></head>
+<body>
+<div class="header"><h1>Mentions légales</h1><p>${w.business_name}</p></div>
+<div class="container">
+<h2>Éditeur du site</h2>
+<p><strong>${w.business_name}</strong><br>
+${pro.trade || ''}<br>
+${w.city || ''}<br>
+Email : <a href="mailto:${w.contact_email}">${w.contact_email}</a><br>
+${pro.siret ? 'SIRET : ' + pro.siret : ''}</p>
+
+<h2>Hébergement</h2>
+<p>Ce site est hébergé par <strong>Quickio</strong><br>
+Site web : <a href="https://quickio.fr">https://quickio.fr</a></p>
+
+<h2>Propriété intellectuelle</h2>
+<p>L'ensemble du contenu de ce site (textes, images, graphismes) est la propriété de ${w.business_name} ou de ses fournisseurs de contenu, et est protégé par les lois françaises et internationales relatives à la propriété intellectuelle.</p>
+
+<h2>Données personnelles</h2>
+<p>Conformément à la loi Informatique et Libertés du 6 janvier 1978 modifiée et au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès, de rectification et de suppression des données vous concernant. Pour exercer ce droit, contactez-nous à : <a href="mailto:${w.contact_email}">${w.contact_email}</a></p>
+
+<h2>Cookies</h2>
+<p>Ce site peut utiliser des cookies techniques nécessaires à son bon fonctionnement. Aucun cookie publicitaire ou de tracking n'est utilisé.</p>
+
+${creditsHtml}
+
+<a class="back" href="/">← Retour au site</a>
+</div>
+<footer>${w.business_name} — Propulsé par <a href="https://quickio.fr" style="color:inherit;">Quickio</a></footer>
+</body></html>`);
+  } catch(err) {
+    console.error(err);
+    res.status(500).send('<h1>Erreur serveur</h1>');
+  }
 });
 
 app.listen(PORT, '0.0.0.0', function() { console.log('Quickio demarre sur http://0.0.0.0:' + PORT); });
