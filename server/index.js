@@ -335,6 +335,17 @@ app.post('/api/auth/resend-verification', requireAuth, async function(req, res) 
     res.json({ success: true });
   } catch(e) { res.status(500).json({ error: 'Erreur' }); }
 });
+app.post('/api/auth/resend-verify', requireAuth, async function(req, res) {
+  try {
+    const pro = await queryOne('SELECT * FROM professionals WHERE id=$1', [req.session.professionalId]);
+    if (!pro || pro.email_verified) return res.json({ success: true });
+    const emailToken = require('crypto').randomBytes(32).toString('hex');
+    const tokenExpires = new Date(Date.now() + 24*60*60*1000);
+    await queryOne('UPDATE professionals SET email_token=$1, email_token_expires=$2 WHERE id=$3', [emailToken, tokenExpires, pro.id]);
+    sendVerificationEmail(pro.email, pro.firstname, emailToken).catch(e => console.error('Email error:', e));
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: 'Erreur' }); }
+});
 app.get('/verify-email', async function(req, res) {
   try {
     const token = req.query.token;
