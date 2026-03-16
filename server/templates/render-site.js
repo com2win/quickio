@@ -39,7 +39,7 @@ function renderSite(site, slug, websiteRow) {
     meta_description: seo.description || '',
     canonical_url:    'https://' + slug + '.quickio.fr',
     site_base_url:    'https://' + slug + '.quickio.fr',
-    hero_image:       '/uploads/hero-default.jpg',
+    hero_image:       w.hero_image_url || '/uploads/hero-default.jpg',
     department_code:  '',
     is_local_page:    false,
     local_city:       '',
