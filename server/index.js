@@ -2,6 +2,23 @@ process.on("uncaughtException",function(e){console.error("[crash]",e.message);})
 process.on("unhandledRejection",function(e){console.error("[reject]",e&&e.message);});
 const express = require('express');
 const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
+
+async function sendVerificationEmail(email, firstname, token) {
+  const RESEND_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_KEY) return console.error('RESEND_API_KEY manquante');
+  const verifyUrl = 'https://quickio.fr/verify-email?token=' + token;
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RESEND_KEY },
+    body: JSON.stringify({
+      from: 'Quickio <noreply@quickio.fr>',
+      to: email,
+      subject: 'Vérifiez votre adresse email — Quickio',
+      html: `<!DOCTYPE html><html><body style="font-family:DM Sans,sans-serif;background:#F7F9FF;padding:40px 20px;"><div style="max-width:520px;margin:0 auto;background:white;border-radius:20px;padding:40px;border:1px solid #E2E8F8;"><div style="text-align:center;margin-bottom:32px;"><span style="font-family:Syne,sans-serif;font-weight:800;font-size:1.4rem;">Quick<span style="color:#1A6BFF;">io</span></span></div><h1 style="font-size:1.4rem;font-weight:800;margin-bottom:8px;">Bonjour ${firstname} 👋</h1><p style="color:#8892A4;line-height:1.7;margin-bottom:24px;">Merci de vous être inscrit sur Quickio. Cliquez sur le bouton ci-dessous pour vérifier votre adresse email et accéder à votre espace.</p><div style="text-align:center;margin-bottom:24px;"><a href="${verifyUrl}" style="background:#1A6BFF;color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:.95rem;display:inline-block;">Vérifier mon email →</a></div><p style="color:#CBD5E1;font-size:.8rem;text-align:center;">Ce lien expire dans 24h. Si vous n'avez pas créé de compte, ignorez cet email.</p></div></body></html>`
+    })
+  });
+}
 const authLimiter = rateLimit({ windowMs: 15*60*1000, max: 5, message: {error: 'Trop de tentatives, réessayez dans 15 minutes.'}, standardHeaders: true, legacyHeaders: false });
 const registerLimiter = rateLimit({ windowMs: 60*60*1000, max: 2, message: {error: 'Trop d\'inscriptions depuis cette IP, réessayez dans 1 heure.'}, standardHeaders: true, legacyHeaders: false });
 const apiLimiter = rateLimit({ windowMs: 60*1000, max: 5, message: {error: 'Trop de requêtes.'}, standardHeaders: true, legacyHeaders: false });
@@ -58,7 +75,7 @@ app.post('/api/auth/register', registerLimiter, async function(req, res) { try {
 app.post('/api/auth/login', authLimiter, async function(req, res) { try { var b = req.body; if (!b.email || !b.password) return res.status(400).json({ error: 'Champs manquants' }); var pro = await queryOne('SELECT * FROM professionals WHERE email = $1', [b.email.toLowerCase().trim()]); if (!pro) return res.status(401).json({ error: 'Email ou mot de passe incorrect' }); var valid = await bcrypt.compare(b.password, pro.password_hash); if (!valid) return res.status(401).json({ error: 'Email ou mot de passe incorrect' }); var w = await queryOne('SELECT id FROM websites WHERE professional_id = $1', [pro.id]); req.session.professionalId = pro.id; req.session.siteId = w ? w.id : null; res.json({ success: true, user: { id: pro.id, firstname: pro.firstname, email: pro.email, plan: pro.plan }, siteId: w ? w.id : null }); } catch (err) { console.error(err); res.status(500).json({ error: 'Erreur serveur' }); } });
 app.get('/auth', function(req,res){ res.sendFile(path.join(__dirname,'..','public','pages','auth.html')); });
 app.post('/api/auth/logout', function(req, res) { req.session.destroy(function() { res.clearCookie('connect.sid'); res.json({ success: true }); }); });
-app.get('/api/auth/me', requireAuth, async function(req, res) { try { var pro = await queryOne('SELECT * FROM professionals WHERE id = $1', [req.session.professionalId]); if (!pro) return res.status(404).json({ error: 'Introuvable' }); res.json({ id: pro.id, firstname: pro.firstname, lastname: pro.lastname, email: pro.email, plan: pro.plan, metier: pro.trade }); } catch (err) { res.status(500).json({ error: 'Erreur serveur' }); } });
+app.get('/api/auth/me', requireAuth, async function(req, res) { try { var pro = await queryOne('SELECT * FROM professionals WHERE id = $1', [req.session.professionalId]); if (!pro) return res.status(404).json({ error: 'Introuvable' }); res.json({ id: pro.id, firstname: pro.firstname, lastname: pro.lastname, email: pro.email, plan: pro.plan, metier: pro.trade, emailVerified: pro.email_verified || false }); } catch (err) { res.status(500).json({ error: 'Erreur serveur' }); } });
 app.get('/api/site', requireAuth, async function(req, res) { try { var w = await queryOne('SELECT * FROM websites WHERE professional_id = $1', [req.session.professionalId]); if (!w) return res.json(null); var services = await queryAll('SELECT * FROM services_offered WHERE website_id = $1 ORDER BY display_order ASC', [w.id]); var pro = await queryOne('SELECT trade, phone FROM professionals WHERE id = $1', [req.session.professionalId]); var svcList = services.map(function(s) { return { id: s.id, icon: s.emoji || '⚡', title: s.title, desc: s.description || '', price: s.price || '', image: s.image_path || '', aiGenerated: s.ai_generated || false }; }); res.json({ id: w.id, slug: w.slug, published: w.published, content: { name: w.business_name || '', tagline: w.tagline || '', description: w.description || '', metier: (pro && pro.trade) || '', city: w.city || '', phone: (pro && pro.phone) || '', email: w.contact_email || '', ctaText: w.cta_text || 'Prendre RDV gratuitement', ctaUrl: w.cta_url || '', services: svcList, socialLinks: { facebook: w.social_facebook || '', instagram: w.social_instagram || '', whatsapp: w.social_whatsapp || '' } }, design: { primaryColor: w.brand_color || '#1A6BFF', fontFamily: w.font_family || 'Syne', theme: w.theme || 'light', template: w.template || 'moderne', buttonRadius: w.button_radius || 50, showServices: w.show_services !== false, showContact: w.show_contact !== false, showReviews: w.show_reviews !== false }, seo: { title: w.seo_title || '', description: w.seo_description || '', keywords: w.seo_keywords || '', googleVerification: w.seo_google_verification || '' }, domain: { subdomain: w.slug || '', customDomain: w.custom_domain || '' }, stats: { visits: w.total_visits || 0, clicks: w.total_clicks || 0 } }); } catch (err) { console.error(err); res.status(500).json({ error: 'Erreur serveur' }); } });
 app.put('/api/site/content', requireAuth, async function(req, res) { try { var b = req.body; var w = await queryOne('SELECT id FROM websites WHERE professional_id = $1', [req.session.professionalId]); if (!w) return res.status(404).json({ error: 'Site introuvable' }); await queryOne('UPDATE websites SET business_name=$1, tagline=$2, description=$3, city=$4, contact_email=$5, cta_text=$6, cta_url=$7, social_facebook=$8, social_instagram=$9, social_whatsapp=$10 WHERE id=$11', [b.name||'', b.tagline||'', b.description||'', b.city||'', b.email||'', b.ctaText||'', b.ctaUrl||'', (b.socialLinks&&b.socialLinks.facebook)||'', (b.socialLinks&&b.socialLinks.instagram)||'', (b.socialLinks&&b.socialLinks.whatsapp)||'', w.id]); if (b.metier) await queryOne('UPDATE professionals SET trade=$1 WHERE id=$2', [b.metier, req.session.professionalId]); if (b.phone) await queryOne('UPDATE professionals SET phone=$1 WHERE id=$2', [b.phone, req.session.professionalId]); if (b.services) { await query('DELETE FROM services_offered WHERE website_id=$1', [w.id]); for (var i=0; i<b.services.length; i++) { var s=b.services[i]; await queryOne('INSERT INTO services_offered (website_id,display_order,emoji,title,description,price,image_path,ai_generated) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)', [w.id, i, s.icon||'⚡', s.title||'', s.desc||'', s.price||'', s.image||'', s.aiGenerated||false]); } } var services = await queryAll('SELECT * FROM services_offered WHERE website_id=$1 ORDER BY display_order ASC', [w.id]); var svcList = services.map(function(s) { return { id:s.id, icon:s.emoji, title:s.title, desc:s.description||'', price:s.price||'', image:s.image_path||'', aiGenerated:s.ai_generated||false }; }); res.json({ success:true, content: { name:b.name, tagline:b.tagline, description:b.description, metier:b.metier, city:b.city, phone:b.phone, email:b.email, ctaText:b.ctaText, ctaUrl:b.ctaUrl, services:svcList, socialLinks:b.socialLinks||{} } }); } catch (err) { console.error(err); res.status(500).json({ error: 'Erreur serveur' }); } });
 app.put('/api/site/design', requireAuth, async function(req, res) { try { var b=req.body; await queryOne('UPDATE websites SET brand_color=$1, font_family=$2, theme=$3, button_radius=$4, show_services=$5, show_contact=$6, show_reviews=$7 WHERE professional_id=$8', [b.primaryColor||'#1A6BFF', b.fontFamily||'Syne', b.theme||'light', b.buttonRadius||50, b.showServices!==false, b.showContact!==false, b.showReviews!==false, req.session.professionalId]); res.json({ success:true, design:b }); } catch (err) { res.status(500).json({ error: 'Erreur serveur' }); } });
@@ -307,6 +324,19 @@ app.get('/api/pro/sites/:websiteId/logo', requireAuth, async function(req, res) 
 
 app.listen(PORT, '0.0.0.0', function() { console.log('Quickio demarre sur http://0.0.0.0:' + PORT); });
 
+app.get('/verify-email', async function(req, res) {
+  try {
+    const token = req.query.token;
+    if (!token) return res.redirect('/dashboard?verify=error');
+    const pro = await queryOne('SELECT * FROM professionals WHERE email_token=$1 AND email_token_expires > NOW()', [token]);
+    if (!pro) return res.redirect('/dashboard?verify=expired');
+    await queryOne('UPDATE professionals SET email_verified=true, email_token=NULL, email_token_expires=NULL WHERE id=$1', [pro.id]);
+    req.session.professionalId = pro.id;
+    const w = await queryOne('SELECT id FROM websites WHERE professional_id=$1', [pro.id]);
+    if (w) req.session.siteId = w.id;
+    res.redirect('/dashboard?verify=success');
+  } catch(e) { console.error(e); res.redirect('/dashboard?verify=error'); }
+});
 app.get('/tarifs', (req,res) => res.sendFile(path.join(__dirname,'..','public','pages','tarifs.html')));
 app.get('/dashboard', function(req, res) {
   res.sendFile(path.join(__dirname, '..', 'public', 'pages', 'dashboard.html'));
