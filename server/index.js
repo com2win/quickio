@@ -66,7 +66,7 @@ async function generateImages(websiteId, trade) {
     if (GROQ_KEY) {
       try {
         const svcTitles = svcRows.map(s => s.title).join(', ');
-        const translatePrompt = 'Tu es un expert en recherche d'images stock. ' +
+        const translatePrompt = 'Tu es un expert en recherche d\'images stock. ' +
           'Transforme le métier en entreprise (ex: couvreur -> entreprise de couverture, plombier -> entreprise de plomberie). ' +
           'Puis traduis en anglais et génère des requêtes Unsplash très précises et visuelles (3-5 mots max) pour:\n' +
           '1. Hero image pour une ' + (trade || 'entreprise professionnelle') + '\n' +
