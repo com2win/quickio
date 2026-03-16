@@ -35,7 +35,9 @@ async function generateImagesDALLE(websiteId, trade, services) {
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + OPENAI_KEY },
       body: JSON.stringify({ model: 'dall-e-3', prompt: prompt, n: 1, size: '1024x1024', quality: 'standard' })
     });
-    const data = await resp.json();
+    const rawText = await resp.text();
+    console.log('[DALLE] Raw response:', rawText.slice(0, 300));
+    const data = JSON.parse(rawText);
     if (!data.data || !data.data[0]) throw new Error('DALLE no data: ' + JSON.stringify(data));
     return data.data[0].url;
   }
