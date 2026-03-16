@@ -66,7 +66,7 @@ async function generateImages(websiteId, trade) {
     }
 
     // Images services (max 3)
-    const svcRows = await queryAll('SELECT id, title FROM services_offered WHERE website_id=$1 ORDER BY display_order ASC LIMIT 3', [websiteId]);
+    const svcRows = await queryAll('SELECT id, title FROM services_offered WHERE website_id=$1 ORDER BY display_order ASC LIMIT 6', [websiteId]);
     for (const svc of svcRows) {
       const svcQuery = svc.title + ' ' + (trade || 'professional');
       const svcPath = await searchAndDownload(svcQuery, 'service-' + svc.id + '.jpg');
