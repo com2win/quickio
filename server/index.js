@@ -327,7 +327,6 @@ app.get('/api/pro/sites/:websiteId/logo', requireAuth, async function(req, res) 
 
 /* FIN QUICKIO_PATCH_V1 */
 
-app.listen(PORT, '0.0.0.0', function() { console.log('Quickio demarre sur http://0.0.0.0:' + PORT); });
 
 app.post('/api/auth/resend-verification', requireAuth, async function(req, res) {
   try {
@@ -393,3 +392,5 @@ app.get('/api/auth/onboarding-status', requireAuth, async function(req, res) {
     res.json({ done: pro ? pro.onboarding_done : false });
   } catch(err) { res.status(500).json({ error: 'Erreur serveur' }); }
 });
+
+app.listen(PORT, '0.0.0.0', function() { console.log('Quickio demarre sur http://0.0.0.0:' + PORT); });
