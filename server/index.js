@@ -72,7 +72,8 @@ async function generateImages(websiteId, trade) {
           '1. Hero image pour une ' + (trade || 'entreprise professionnelle') + '\n' +
           '2. Ces services: ' + svcTitles + '\n' +
           'Réponds UNIQUEMENT en JSON sans backticks: {"hero": "query anglais", "services": ["query1", "query2", ...]}\n' +
-          'Exemples: plombier sanitaire -> "plumbing company bathroom", installation chaudière -> "boiler heating installation"';
+          'IMPORTANT: Les requêtes doivent cibler des photos réalistes du métier. Pour le hero, image générique representant parfaitement le métier (outil, chantier, matériel). Pour les services, même chose. Si des personnes apparaissent, ajoute "european worker" à la requête.\n' +
+          'Exemples: plombier -> "plumbing pipes tools european worker", couvreur -> "roofing tiles company work", installation chaudière -> "boiler heating installation european technician"';
         const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
