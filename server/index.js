@@ -556,6 +556,17 @@ app.get('/api/auth/onboarding-status', requireAuth, async function(req, res) {
   } catch(err) { res.status(500).json({ error: 'Erreur serveur' }); }
 });
 
+app.get('/api/site/mentions-legales', requireAuth, async function(req, res) {
+  try {
+    var w = await queryOne('SELECT * FROM websites WHERE professional_id=$1', [req.session.professionalId]);
+    if (!w) return res.status(404).send('<h1>Site introuvable</h1>');
+    var pro = await queryOne('SELECT * FROM professionals WHERE id=$1', [w.professional_id]);
+    var credits = await queryAll('SELECT * FROM image_credits WHERE website_id=$1', [w.id]);
+    req.mentionsW = w; req.mentionsPro = pro; req.mentionsCredits = credits;
+    return renderMentions(req, res);
+  } catch(err) { console.error(err); res.status(500).send('<h1>Erreur serveur</h1>'); }
+});
+
 app.get('/mentions-legales', async function(req, res) {
   var sub = getSubdomain(req);
   if (!sub) return res.status(404).send('<h1>Page introuvable</h1>');
@@ -565,6 +576,15 @@ app.get('/mentions-legales', async function(req, res) {
     var pro = await queryOne('SELECT * FROM professionals WHERE id=$1', [w.professional_id]);
     if (!pro) return res.status(404).send('<h1>Site introuvable</h1>');
     var credits = await queryAll('SELECT * FROM image_credits WHERE website_id=$1', [w.id]);
+    req.mentionsW = w; req.mentionsPro = pro; req.mentionsCredits = credits;
+    return renderMentions(req, res);
+  } catch(err) { console.error(err); res.status(500).send('<h1>Erreur serveur</h1>'); }
+});
+
+function renderMentions(req, res) {
+  var w = req.mentionsW;
+  var pro = req.mentionsPro;
+  var credits = req.mentionsCredits || [];
 
     var creditsHtml = '';
     if (credits.length > 0) {
