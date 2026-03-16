@@ -635,10 +635,6 @@ ${creditsHtml}
 </div>
 <footer>${w.business_name} — Propulsé par <a href="https://quickio.fr" style="color:inherit;">Quickio</a></footer>
 </body></html>`);
-  } catch(err) {
-    console.error(err);
-    res.status(500).send('<h1>Erreur serveur</h1>');
-  }
-});
+}
 
 app.listen(PORT, '0.0.0.0', function() { console.log('Quickio demarre sur http://0.0.0.0:' + PORT); });
