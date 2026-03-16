@@ -30,7 +30,7 @@ async function generateImagesDALLE(websiteId, trade, services) {
   if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
   async function dalleGenerate(prompt) {
-    const resp = await fetch('https://api.openai.com/v1/images/generate', {
+    const resp = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + OPENAI_KEY },
       body: JSON.stringify({ model: 'dall-e-3', prompt: prompt, n: 1, size: '1024x1024', quality: 'standard' })
