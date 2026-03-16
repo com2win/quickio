@@ -54,23 +54,20 @@ async function generateImagesDALLE(websiteId, trade, services) {
     const heroPrompt = 'Photographie professionnelle ultra-réaliste d un(e) ' + (trade || 'professionnel') + ' en action sur un chantier ou en intervention, lumière naturelle cinématique, style magazine, très haute qualité, sans texte ni logo';
     const heroUrl = await dalleGenerate(heroPrompt);
     const heroPath = await downloadImage(heroUrl, 'hero-' + websiteId + '.jpg');
-    const { Pool } = require('pg');
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-    await pool.query('UPDATE websites SET hero_image_url=$1 WHERE id=$2', [heroPath, websiteId]);
+    await queryOne('UPDATE websites SET hero_image_url=$1 WHERE id=$2', [heroPath, websiteId]);
     console.log('[DALLE] Hero généré:', heroPath);
 
     // Images services (max 3 pour limiter les coûts)
-    const svcRows = await pool.query('SELECT id, title FROM services_offered WHERE website_id=$1 ORDER BY display_order ASC LIMIT 3', [websiteId]);
-    for (const svc of svcRows.rows) {
+    const svcRows = await queryAll('SELECT id, title FROM services_offered WHERE website_id=$1 ORDER BY display_order ASC LIMIT 3', [websiteId]);
+    for (const svc of svcRows) {
       try {
         const svcPrompt = 'Photographie professionnelle ultra-réaliste illustrant le service "' + svc.title + '" pour un(e) ' + (trade || 'professionnel') + ', style photo commerciale moderne, lumière douce, sans texte ni logo';
         const svcUrl = await dalleGenerate(svcPrompt);
         const svcPath = await downloadImage(svcUrl, 'service-' + svc.id + '.jpg');
-        await pool.query('UPDATE services_offered SET image_path=$1 WHERE id=$2', [svcPath, svc.id]);
+        await queryOne('UPDATE services_offered SET image_path=$1 WHERE id=$2', [svcPath, svc.id]);
         console.log('[DALLE] Service généré:', svcPath);
       } catch(e) { console.error('[DALLE] Service image error:', svc.title, e.message); }
     }
-    await pool.end();
     console.log('[DALLE] Toutes les images générées pour', websiteId);
   } catch(e) {
     console.error('[DALLE] Erreur globale:', e.message);
