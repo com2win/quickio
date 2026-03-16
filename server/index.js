@@ -57,22 +57,52 @@ async function generateImages(websiteId, trade) {
   }
 
   try {
+    const GROQ_KEY = process.env.GROQ_API_KEY;
+    const svcRows = await queryAll('SELECT id, title FROM services_offered WHERE website_id=$1 ORDER BY display_order ASC LIMIT 6', [websiteId]);
+
+    let heroQueryEn = (trade || 'professional worker') + ' company at work';
+    let svcQueriesEn = svcRows.map(s => s.title + ' professional service');
+
+    if (GROQ_KEY) {
+      try {
+        const svcTitles = svcRows.map(s => s.title).join(', ');
+        const translatePrompt = 'Tu es un expert en recherche d'images stock. ' +
+          'Transforme le métier en entreprise (ex: couvreur -> entreprise de couverture, plombier -> entreprise de plomberie). ' +
+          'Puis traduis en anglais et génère des requêtes Unsplash très précises et visuelles (3-5 mots max) pour:\n' +
+          '1. Hero image pour une ' + (trade || 'entreprise professionnelle') + '\n' +
+          '2. Ces services: ' + svcTitles + '\n' +
+          'Réponds UNIQUEMENT en JSON sans backticks: {"hero": "query anglais", "services": ["query1", "query2", ...]}\n' +
+          'Exemples: plombier sanitaire -> "plumbing company bathroom", installation chaudière -> "boiler heating installation"';
+        const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
+          body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'user', content: translatePrompt }], max_tokens: 256, temperature: 0.3 })
+        });
+        const groqData = await groqResp.json();
+        if (groqData.choices && groqData.choices[0]) {
+          const parsed = JSON.parse(groqData.choices[0].message.content.replace(/```json|```/g, '').trim());
+          if (parsed.hero) heroQueryEn = parsed.hero;
+          if (parsed.services && parsed.services.length) svcQueriesEn = parsed.services;
+          console.log('[UNSPLASH] Requêtes:', heroQueryEn, svcQueriesEn);
+        }
+      } catch(e) { console.error('[UNSPLASH] Groq error:', e.message); }
+    }
+
     // Image hero
-    const heroQuery = (trade || 'professional worker') + ' at work';
-    const heroPath = await searchAndDownload(heroQuery, 'hero-' + websiteId + '.jpg');
+    const heroPath = await searchAndDownload(heroQueryEn, 'hero-' + websiteId + '.jpg');
     if (heroPath) {
       await queryOne('UPDATE websites SET hero_image_url=$1 WHERE id=$2', [heroPath, websiteId]);
       console.log('[UNSPLASH] Hero généré:', heroPath);
     }
 
-    // Images services (max 3)
-    const svcRows = await queryAll('SELECT id, title FROM services_offered WHERE website_id=$1 ORDER BY display_order ASC LIMIT 6', [websiteId]);
-    for (const svc of svcRows) {
-      const svcQuery = svc.title + ' ' + (trade || 'professional');
+    // Images services
+    for (let i = 0; i < svcRows.length; i++) {
+      const svc = svcRows[i];
+      const svcQuery = svcQueriesEn[i] || svc.title + ' professional';
       const svcPath = await searchAndDownload(svcQuery, 'service-' + svc.id + '.jpg');
       if (svcPath) {
         await queryOne('UPDATE services_offered SET image_path=$1 WHERE id=$2', [svcPath, svc.id]);
-        console.log('[UNSPLASH] Service généré:', svc.title);
+        console.log('[UNSPLASH] Service généré:', svc.title, '->', svcQuery);
       }
     }
     console.log('[UNSPLASH] Toutes les images générées pour', websiteId);
