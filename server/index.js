@@ -19,9 +19,11 @@ async function sendVerificationEmail(email, firstname, token) {
     })
   });
 }
-const authLimiter = rateLimit({ windowMs: 15*60*1000, max: 5, message: {error: 'Trop de tentatives, réessayez dans 15 minutes.'}, standardHeaders: true, legacyHeaders: false });
-const registerLimiter = rateLimit({ windowMs: 60*60*1000, max: 2, message: {error: 'Trop d\'inscriptions depuis cette IP, réessayez dans 1 heure.'}, standardHeaders: true, legacyHeaders: false });
-const apiLimiter = rateLimit({ windowMs: 60*1000, max: 5, message: {error: 'Trop de requêtes.'}, standardHeaders: true, legacyHeaders: false });
+const WHITELIST_IPS = ['37.67.176.255', '152.53.248.244'];
+const skipIfWhitelisted = (req) => WHITELIST_IPS.includes(req.ip || req.connection.remoteAddress);
+const authLimiter = rateLimit({ skip: skipIfWhitelisted, windowMs: 15*60*1000, max: 5, message: {error: 'Trop de tentatives, réessayez dans 15 minutes.'}, standardHeaders: true, legacyHeaders: false });
+const registerLimiter = rateLimit({ skip: skipIfWhitelisted, windowMs: 60*60*1000, max: 2, message: {error: 'Trop d\'inscriptions depuis cette IP, réessayez dans 1 heure.'}, standardHeaders: true, legacyHeaders: false });
+const apiLimiter = rateLimit({ skip: skipIfWhitelisted, windowMs: 60*1000, max: 5, message: {error: 'Trop de requêtes.'}, standardHeaders: true, legacyHeaders: false });
 const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
 const bcrypt = require('bcryptjs');
