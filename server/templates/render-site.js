@@ -51,6 +51,12 @@ function renderSite(site, slug, websiteRow) {
     // Schémas
     opening_hours_schema: JSON.stringify([]),
     faq_schema_items:     null,
+    faq_items:            (w.faq_items || []).map(function(f) { return { faq_question: f.question, faq_answer: f.answer, faq_source_url: f.source_url || '', faq_source_label: f.source_label || '', faq_has_source: !!(f.source_url) }; }),
+    faq_html:             (w.faq_items || []).map(function(f, i) {
+      var src = f.source_url ? '<a href="'+f.source_url+'" target="_blank" rel="noopener" class="faq-source"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'+(f.source_label||'Source')+'</a>' : '';
+      return '<details class="faq-card"'+(i===0?' open':'')+'>\n<summary><span>'+f.question+'</span><span class="faq-toggle">+</span></summary>\n<div class="faq-card__body"><p>'+f.answer+'</p>'+src+'</div>\n</details>';
+    }).join('\n'),
+    has_faq:              !!(w.faq_items && w.faq_items.length > 0),
 
     // Couleurs
     primary_color: primary,

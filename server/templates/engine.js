@@ -26,11 +26,13 @@ function compile(tpl, data) {
     const arr = getValue(data, key.trim());
     if (!Array.isArray(arr) || arr.length === 0) return '';
     return arr.map((item, i) => {
-      const itemData = Object.assign({}, data, item, {
+      const itemData = Object.assign({}, data, {
         '@index': i,
         '@last':  i === arr.length - 1,
         'this':   item
       });
+      // Ajouter les props de item SANS écraser les clés existantes de data
+      Object.keys(item).forEach(k => { if (!(k in data)) itemData[k] = item[k]; });
       return compile(inner, itemData);
     }).join('');
   });
@@ -48,6 +50,7 @@ function compile(tpl, data) {
 function getValue(data, key) {
   // Support this.prop, @index, @last
   if (key === 'this') return data;
+  if (key.startsWith('this.')) key = key.slice(5);
   const parts = key.split('.');
   let val = data;
   for (const p of parts) {

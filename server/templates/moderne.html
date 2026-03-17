@@ -1016,53 +1016,6 @@ details.faq-card[open] summary .faq-toggle {
         </div>
       </div>
 
-    {{#if google_rating_real}}
-    <div class="reviews-grid" id="reviews-container">
-      <div class="review-card">
-        <div class="review-card__top">
-          <div class="review-card__stars"><span style="color:#fbbf24">★</span><span style="color:#fbbf24">★</span><span style="color:#fbbf24">★</span><span style="color:#fbbf24">★</span><span style="color:#fbbf24">★</span></div>
-          <div class="review-card__date">il y a 2 semaines</div>
-        </div>
-        <p class="review-card__text">"Équipe très réactive, intervention rapide pour élaguer notre grand sapin. Travail précis, chantier parfaitement nettoyé après l'intervention. Je recommande vivement !"</p>
-        <div class="review-card__author">
-          <div class="review-card__avatar">BR</div>
-          <div>
-            <div class="review-card__name">Benjamin R.</div>
-            <div class="review-card__source">Google</div>
-          </div>
-        </div>
-      </div>
-      <div class="review-card">
-        <div class="review-card__top">
-          <div class="review-card__stars"><span style="color:#fbbf24">★</span><span style="color:#fbbf24">★</span><span style="color:#fbbf24">★</span><span style="color:#fbbf24">★</span><span style="color:#fbbf24">★</span></div>
-          <div class="review-card__date">il y a 1 mois</div>
-        </div>
-        <p class="review-card__text">"Démontage d'un chêne malade de 20 mètres, nettoyage du chantier impeccable. Une équipe dynamique et respectueuse de l'environnement. Merci à vous !"</p>
-        <div class="review-card__author">
-          <div class="review-card__avatar">DF</div>
-          <div>
-            <div class="review-card__name">Dominique F.</div>
-            <div class="review-card__source">Google</div>
-          </div>
-        </div>
-      </div>
-      <div class="review-card">
-        <div class="review-card__top">
-          <div class="review-card__stars"><span style="color:#fbbf24">★</span><span style="color:#fbbf24">★</span><span style="color:#fbbf24">★</span><span style="color:#fbbf24">★</span><span style="color:#fbbf24">★</span></div>
-          <div class="review-card__date">il y a 2 mois</div>
-        </div>
-        <p class="review-card__text">"Taillage de mes haies impeccable, coupe propre et forme arrondie très esthétique. J'ai aussi confié la tonte du jardin. On se croirait dans un golf !"</p>
-        <div class="review-card__author">
-          <div class="review-card__avatar">VT</div>
-          <div>
-            <div class="review-card__name">Vincent T.</div>
-            <div class="review-card__source">Google</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {{/if}}
     <div class="reviews-footer">
       <a href="https://www.google.com/maps/search/?api=1&query=Élagueurs+Toulousains+Toulouse" target="_blank" rel="noopener" class="btn btn-ghost reviews-footer__btn">
         Voir tous les avis sur Google →
@@ -1129,51 +1082,20 @@ details.faq-card[open] summary .faq-toggle {
   </div>
 </section>
 
-<!-- FAQ — générée par Groq au chargement -->
+{{#if has_faq}}
+<!-- FAQ — générée par IA à l'inscription -->
 <section class="section section--tinted" id="faq">
   <div class="section__inner">
     <div class="section__header">
       <p class="section__label">Questions fréquentes</p>
       <h2 class="section__title">On répond à <em>vos questions</em></h2>
     </div>
-
-    <!-- Conteneur FAQ : rempli en JS via Groq -->
-    <div id="faq-container">
     <div class="faq-grid">
-      <details class="faq-card" open>
-        <summary><span>Faut-il une autorisation pour abattre un arbre ?</span><span class="faq-toggle">+</span></summary>
-        <div class="faq-card__body">
-          <p>Si votre arbre mesure plus d'1,50 m de haut, son abattage doit être déclaré à votre mairie. À Toulouse, les règles varient selon le PLU. Nous vous accompagnons dans ces démarches pour une intervention en toute légalité.</p>
-          <a href="https://www.service-public.fr/particuliers/vosdroits/F31404" target="_blank" rel="noopener noreferrer" class="faq-source">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Service-Public.fr
-          </a>
-        </div>
-      </details>
-      <details class="faq-card">
-        <summary><span>Quelle est la meilleure période pour élaguer ?</span><span class="faq-toggle">+</span></summary>
-        <div class="faq-card__body">
-          <p>Fin d'hiver ou début de printemps, avant le débourrement. Cette période limite le stress pour l'arbre. Nos arboristes vous conseillent selon votre espèce et sa localisation en Haute-Garonne.</p>
-          <a href="https://www.onf.fr/onf/+/5ac::les-arbres-en-ville-des-atouts-pour-les-territoires.html" target="_blank" rel="noopener noreferrer" class="faq-source">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            ONF — Office National des Forêts
-          </a>
-        </div>
-      </details>
-      <details class="faq-card">
-        <summary><span>Propriétaire ou locataire — qui paye l'élagage ?</span><span class="faq-toggle">+</span></summary>
-        <div class="faq-card__body">
-          <p>Le locataire est responsable de l'entretien courant. Les travaux importants relèvent du propriétaire. En cas de doute, contactez-nous pour un conseil et un devis gratuit adapté à votre situation.</p>
-          <a href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006824098" target="_blank" rel="noopener noreferrer" class="faq-source">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Légifrance — Code Civil
-          </a>
-        </div>
-      </details>
-    </div>
+      {{faq_html}}
     </div>
   </div>
 </section>
+{{/if}}
 
 <!-- CONTACT -->
 
