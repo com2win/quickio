@@ -12,7 +12,7 @@ async function sendVerificationEmail(email, firstname, token) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + RESEND_KEY },
     body: JSON.stringify({
-      from: 'Quickio <noreply@quickio.fr>',
+      from: 'Quickio <noreply@mail.quickio.fr>',
       to: email,
       subject: 'Vérifiez votre adresse email — Quickio',
       html: `<!DOCTYPE html><html><body style="font-family:DM Sans,sans-serif;background:#F7F9FF;padding:40px 20px;"><div style="max-width:520px;margin:0 auto;background:white;border-radius:20px;padding:40px;border:1px solid #E2E8F8;"><div style="text-align:center;margin-bottom:32px;"><span style="font-family:Syne,sans-serif;font-weight:800;font-size:1.4rem;">Quick<span style="color:#1A6BFF;">io</span></span></div><h1 style="font-size:1.4rem;font-weight:800;margin-bottom:8px;">Bonjour ${firstname} 👋</h1><p style="color:#8892A4;line-height:1.7;margin-bottom:24px;">Merci de vous être inscrit sur Quickio. Cliquez sur le bouton ci-dessous pour vérifier votre adresse email et accéder à votre espace.</p><div style="text-align:center;margin-bottom:24px;"><a href="${verifyUrl}" style="background:#1A6BFF;color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:.95rem;display:inline-block;">Vérifier mon email →</a></div><p style="color:#CBD5E1;font-size:.8rem;text-align:center;">Ce lien expire dans 24h. Si vous n'avez pas créé de compte, ignorez cet email.</p></div></body></html>`
