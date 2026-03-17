@@ -542,8 +542,8 @@ app.get('/templates', function(req, res) {
 app.post('/api/auth/onboarding', requireAuth, async function(req, res) {
   try {
     var b = req.body;
-    await queryOne('UPDATE professionals SET phone=$1, address=$2, siret=$3, partners=$4, google_place_name=$5, onboarding_done=true WHERE id=$6',
-      [b.phone||'', b.address||'', b.siret||'', b.partners||'', b.googlePlaceName||'', req.session.professionalId]);
+    await queryOne('UPDATE professionals SET phone=$1, address=$2, partners=$3, google_place_name=$4, onboarding_done=true WHERE id=$5',
+      [b.phone||'', b.address||'', b.partners||'', b.googlePlaceName||'', req.session.professionalId]);
     if (b.city) await queryOne('UPDATE websites SET city=$1 WHERE professional_id=$2', [b.city, req.session.professionalId]);
     res.json({ success: true });
   } catch(err) { console.error(err); res.status(500).json({ error: 'Erreur serveur' }); }
