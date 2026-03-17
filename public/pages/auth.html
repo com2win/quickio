@@ -217,7 +217,7 @@ async function nextStep(){
     var phone=document.getElementById('ob-phone').value.trim();
     var address=document.getElementById('ob-address').value.trim();
     var city=document.getElementById('ob-city').value.trim();
-    var siret=document.getElementById('ob-siret').value.trim();
+    var siret='';
     var partners=document.getElementById('ob-partners').value.trim();
     var google=document.getElementById('ob-google').value.trim();
     if(!phone){showError('onboard-error','Veuillez renseigner votre numéro de téléphone.');return;}
