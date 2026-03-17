@@ -142,6 +142,7 @@ function renderSite(site, slug, websiteRow) {
 
     // ID site pour JS
     website_id: w.id || '',
+    mentions_url: w.mentions_url_override || '/mentions-legales',
   };
 
   // window.QUICKIO_SITE injecté pour le JS client
