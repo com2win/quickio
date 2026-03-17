@@ -357,18 +357,13 @@ function buildChart() {
 // Vérif email au chargement
 (async function checkVerify() {
   const params = new URLSearchParams(window.location.search);
-  if (params.get('verify') === 'success') {
-    document.getElementById('verify-success-banner').style.display = 'block';
-    setTimeout(() => document.getElementById('verify-success-banner').style.display = 'none', 5000);
-  }
+
   const me = await fetch('/api/auth/me').then(r=>r.json()).catch(()=>null);
-  if (me && !me.emailVerified) {
-    document.getElementById('verify-banner').style.display = 'block';
-  }
+
 })();
 
 async function resendVerif() {
-  await fetch('/api/auth/resend-verification', { method: 'POST' });
+
   alert('Email de vérification renvoyé !');
 }
 
@@ -420,13 +415,8 @@ function showToast(msg) {
 init();
 </script>
 
-<div id="verify-banner" style="display:none;background:#FFF8E1;border-bottom:2px solid #FFB300;padding:12px 24px;text-align:center;font-size:.88rem;font-weight:600;color:#7A5C00;">
-  ⚠️ Vérifiez votre email pour accéder à toutes les fonctionnalités. 
-  <a href="#" onclick="resendVerif()" style="color:#1A6BFF;margin-left:8px;">Renvoyer l'email →</a>
-</div>
-<div id="verify-success-banner" style="display:none;background:#E8F5E9;border-bottom:2px solid #4CAF50;padding:12px 24px;text-align:center;font-size:.88rem;font-weight:600;color:#2E7D32;">
-  ✅ Email vérifié avec succès ! Bienvenue sur Quickio.
-</div>
+
+
 <div id="upgrade-modal" style="display:none;position:fixed;inset:0;background:rgba(10,15,30,.6);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;padding:20px;">
   <div style="background:white;border-radius:20px;width:100%;max-width:480px;padding:40px;text-align:center;box-shadow:0 24px 80px rgba(10,15,30,.2);">
     <div style="font-size:3rem;margin-bottom:16px;">🚀</div>
