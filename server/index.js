@@ -55,14 +55,18 @@ async function generateImages(websiteId, trade) {
     if (GROQ_KEY) {
       try {
         const svcTitles = svcRows.map(s => s.title).join(', ');
-        const translatePrompt = 'Tu es un expert en recherche d\'images stock. ' +
-          'Transforme le métier en entreprise (ex: couvreur -> entreprise de couverture, plombier -> entreprise de plomberie). ' +
-          'Puis traduis en anglais et génère des requêtes Pexels très précises et visuelles (4-6 mots) pour:\n' +
-          '1. Hero image pour une ' + (trade || 'entreprise professionnelle') + '\n' +
-          '2. Ces services: ' + svcTitles + '\n' +
-          'Réponds UNIQUEMENT en JSON sans backticks: {"hero": "query anglais", "services": ["query1", "query2", ...]}\n' +
-          'IMPORTANT: Les requêtes doivent cibler des photos réalistes du métier. Pour le hero, image générique representant parfaitement le métier (outil, chantier, matériel). Pour les services, même chose. Si des personnes apparaissent, ajoute "european worker" à la requête.\n' +
-          'Exemples: plombier -> "plumbing pipes tools european worker", couvreur -> "roofing tiles company work", installation chaudière -> "boiler heating installation european technician". Favorise des images d action realistes montrant le metier en situation, evite les portraits';
+        const translatePrompt = 'You are a professional stock photo expert for Pexels. ' +
+          'Generate highly specific English search queries for the trade: ' + (trade || 'professional') + '. ' +
+          'STRICT RULES: 1) Include professional/contractor/licensed in hero query. ' +
+          '2) Target residential or small commercial context only, never industrial/factory/high voltage. ' +
+          '3) Show trade-specific tools. 4) Add workwear or uniform. ' +
+          '5) Never: amateur, DIY, industrial, factory, power plant. ' +
+          'GOOD EXAMPLES: electrician hero->licensed electrician installing outlet residential workwear, ' +
+          'plumber hero->licensed plumber fixing bathroom pipes uniform, ' +
+          'painter->professional painter rolling interior wall, ' +
+          'roofer->roofer installing shingles residential roof professional. ' +
+          'Services: ' + svcTitles + '. ' +
+          'Reply ONLY valid JSON no backticks: {"hero": "query", "services": ["q1", "q2"]}';
         const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
