@@ -4,6 +4,74 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const crypto = require('crypto');
 
+
+// ── Dictionnaire de requêtes Pexels par métier ──────────────────
+const TRADE_QUERIES = {
+  // Plomberie
+  'plombier':              { hero: 'professional plumber fixing pipes bathroom uniform', services: ['plumber fixing leaky faucet sink', 'plumber unclogging drain bathroom', 'plumber installing water heater', 'plumber repairing pipe under sink', 'plumber pressure testing pipes', 'plumber soldering copper pipes'] },
+  'plomberie':             { hero: 'professional plumber fixing pipes bathroom uniform', services: ['plumber fixing leaky faucet sink', 'plumber unclogging drain bathroom', 'plumber installing water heater', 'plumber repairing pipe under sink', 'plumber pressure testing pipes', 'plumber soldering copper pipes'] },
+  // Electricité
+  'electricien':           { hero: 'licensed electrician installing outlet residential workwear', services: ['electrician wiring circuit breaker panel', 'electrician installing light fixture ceiling', 'electrician fixing electrical outlet wall', 'electrician checking electrical panel residential', 'electrician installing smart home system', 'electrician outdoor lighting installation'] },
+  'electricite':           { hero: 'licensed electrician installing outlet residential workwear', services: ['electrician wiring circuit breaker panel', 'electrician installing light fixture ceiling', 'electrician fixing electrical outlet wall', 'electrician checking electrical panel residential', 'electrician installing smart home system', 'electrician outdoor lighting installation'] },
+  // Peinture
+  'peintre':               { hero: 'professional painter rolling white wall interior clean', services: ['painter applying paint roller interior wall', 'painter ceiling painting white room', 'painter exterior house painting ladder', 'painter decorative finish wall texture', 'painter preparing wall sanding primer', 'painter taping trim professional finish'] },
+  'peinture':              { hero: 'professional painter rolling white wall interior clean', services: ['painter applying paint roller interior wall', 'painter ceiling painting white room', 'painter exterior house painting ladder', 'painter decorative finish wall texture', 'painter preparing wall sanding primer', 'painter taping trim professional finish'] },
+  // Maconnerie
+  'macon':                 { hero: 'professional mason laying bricks residential construction', services: ['mason laying bricks wall construction', 'mason concrete foundation pouring', 'mason stone wall renovation', 'mason tiling floor bathroom', 'mason plastering wall smooth', 'mason building steps outdoor'] },
+  'maconnerie':            { hero: 'professional mason laying bricks residential construction', services: ['mason laying bricks wall construction', 'mason concrete foundation pouring', 'mason stone wall renovation', 'mason tiling floor bathroom', 'mason plastering wall smooth', 'mason building steps outdoor'] },
+  // Couverture
+  'couvreur':              { hero: 'professional roofer installing shingles residential roof', services: ['roofer laying roof tiles sunny day', 'roofer waterproofing flat roof', 'roofer repairing damaged shingles', 'roofer installing zinc flashing', 'roofer replacing gutters house', 'roofer insulation roof installation'] },
+  'toiture':               { hero: 'professional roofer installing shingles residential roof', services: ['roofer laying roof tiles sunny day', 'roofer waterproofing flat roof', 'roofer repairing damaged shingles', 'roofer installing zinc flashing', 'roofer replacing gutters house', 'roofer insulation roof installation'] },
+  // Menuiserie
+  'menuisier':             { hero: 'professional carpenter woodworking workshop tools', services: ['carpenter installing wooden door frame', 'carpenter building custom kitchen cabinet', 'carpenter installing hardwood floor', 'carpenter making wooden staircase', 'carpenter window frame installation', 'carpenter deck building outdoor wood'] },
+  'menuiserie':            { hero: 'professional carpenter woodworking workshop tools', services: ['carpenter installing wooden door frame', 'carpenter building custom kitchen cabinet', 'carpenter installing hardwood floor', 'carpenter making wooden staircase', 'carpenter window frame installation', 'carpenter deck building outdoor wood'] },
+  // Carrelage
+  'carreleur':             { hero: 'professional tiler laying ceramic tiles bathroom', services: ['tiler laying floor tiles bathroom', 'tiler grouting wall tiles kitchen', 'tiler cutting ceramic tile saw', 'tiler applying adhesive floor', 'tiler finishing bathroom shower', 'tiler outdoor terrace tiling'] },
+  'carrelage':             { hero: 'professional tiler laying ceramic tiles bathroom', services: ['tiler laying floor tiles bathroom', 'tiler grouting wall tiles kitchen', 'tiler cutting ceramic tile saw', 'tiler applying adhesive floor', 'tiler finishing bathroom shower', 'tiler outdoor terrace tiling'] },
+  // Chauffage
+  'chauffagiste':          { hero: 'professional heating technician installing boiler residential', services: ['technician installing gas boiler home', 'heating engineer radiator installation', 'technician heat pump installation outdoor', 'plumber underfloor heating pipes', 'technician servicing boiler annual', 'heating engineer thermostat installation'] },
+  'chauffage':             { hero: 'professional heating technician installing boiler residential', services: ['technician installing gas boiler home', 'heating engineer radiator installation', 'technician heat pump installation outdoor', 'plumber underfloor heating pipes', 'technician servicing boiler annual', 'heating engineer thermostat installation'] },
+  // Climatisation
+  'climaticien':           { hero: 'professional technician installing air conditioning unit', services: ['technician mounting air conditioner wall unit', 'hvac technician outdoor unit installation', 'technician air conditioning maintenance service', 'hvac cleaning filter air conditioner', 'technician installing split system indoor', 'hvac refrigerant recharge service'] },
+  'climatisation':         { hero: 'professional technician installing air conditioning unit', services: ['technician mounting air conditioner wall unit', 'hvac technician outdoor unit installation', 'technician air conditioning maintenance service', 'hvac cleaning filter air conditioner', 'technician installing split system indoor', 'hvac refrigerant recharge service'] },
+  // Jardinage
+  'jardinier':             { hero: 'professional gardener trimming hedge garden tools', services: ['gardener mowing lawn green grass', 'gardener pruning tree branches garden', 'gardener planting flowers bed spring', 'gardener laying turf grass lawn', 'gardener leaf blower autumn cleanup', 'landscape gardener designing outdoor space'] },
+  'jardinage':             { hero: 'professional gardener trimming hedge garden tools', services: ['gardener mowing lawn green grass', 'gardener pruning tree branches garden', 'gardener planting flowers bed spring', 'gardener laying turf grass lawn', 'gardener leaf blower autumn cleanup', 'landscape gardener designing outdoor space'] },
+  // Nettoyage
+  'nettoyage':             { hero: 'professional cleaner cleaning office building uniform', services: ['cleaner vacuuming carpet office', 'cleaner mopping floor commercial', 'window cleaner squeegee building exterior', 'cleaner disinfecting surface spray', 'pressure washing driveway pavement', 'cleaner sanitizing bathroom professional'] },
+  // Demenagement
+  'demenageur':            { hero: 'professional movers carrying furniture moving truck', services: ['movers lifting sofa apartment stairs', 'moving boxes stacking truck professional', 'movers wrapping furniture protection blanket', 'moving company unloading truck house', 'movers carrying boxes new home', 'professional moving team furniture assembly'] },
+  // Coiffure
+  'coiffeur':              { hero: 'professional hairdresser cutting hair salon', services: ['hairdresser coloring hair client salon', 'barber cutting mens hair clippers', 'hairdresser blow drying hair styling', 'hairdresser highlighting hair foils salon', 'hairdresser washing hair basin', 'hairdresser styling updo wedding hair'] },
+  'coiffure':              { hero: 'professional hairdresser cutting hair salon', services: ['hairdresser coloring hair client salon', 'barber cutting mens hair clippers', 'hairdresser blow drying hair styling', 'hairdresser highlighting hair foils salon', 'hairdresser washing hair basin', 'hairdresser styling updo wedding hair'] },
+  // Esthetique
+  'estheticien':           { hero: 'professional esthetician facial treatment beauty salon', services: ['esthetician applying facial mask client', 'beautician eyebrow shaping threading', 'esthetician body massage relaxation', 'beauty technician nail manicure salon', 'esthetician laser hair removal treatment', 'spa facial cleansing professional skincare'] },
+  'esthetique':            { hero: 'professional esthetician facial treatment beauty salon', services: ['esthetician applying facial mask client', 'beautician eyebrow shaping threading', 'esthetician body massage relaxation', 'beauty technician nail manicure salon', 'esthetician laser hair removal treatment', 'spa facial cleansing professional skincare'] },
+  // Massage
+  'masseur':               { hero: 'professional massage therapist relaxation spa', services: ['massage therapist back massage table', 'therapist deep tissue massage shoulder', 'relaxation massage aromatherapy candles', 'sports massage therapist leg muscles', 'therapist hot stone massage back', 'facial massage beauty treatment salon'] },
+  'massage':               { hero: 'professional massage therapist relaxation spa', services: ['massage therapist back massage table', 'therapist deep tissue massage shoulder', 'relaxation massage aromatherapy candles', 'sports massage therapist leg muscles', 'therapist hot stone massage back', 'facial massage beauty treatment salon'] },
+  // Coach
+  'coach':                 { hero: 'professional life coach consultation meeting office', services: ['coach client meeting consultation table', 'personal trainer coaching gym workout', 'business coach whiteboard strategy session', 'wellness coach meditation mindfulness', 'coach motivational speaking group', 'nutrition coach healthy food planning'] },
+  // Nutrition
+  'nutritionniste':        { hero: 'professional nutritionist consultation healthy food office', services: ['nutritionist meal planning vegetables table', 'dietitian consultation client healthy eating', 'nutritionist food diary review session', 'healthy meal prep containers nutrition', 'nutritionist weighing food portions', 'dietitian body composition analysis'] },
+  // Psychologie
+  'psychologue':           { hero: 'professional psychologist therapy session office calm', services: ['therapist client consultation comfortable office', 'psychologist notes therapy session', 'mental health consultation professional office', 'therapy session couch psychologist room', 'counselor listening client session', 'psychologist relaxation breathing exercise'] },
+  // Osteopathie
+  'osteopathe':            { hero: 'professional osteopath treatment table consultation', services: ['osteopath spinal manipulation treatment', 'osteopath shoulder joint mobilization', 'osteopath cranial therapy gentle hands', 'physical therapist back treatment table', 'osteopath neck adjustment professional', 'osteopath posture assessment consultation'] },
+};
+
+function getTradeQueries(trade, svcTitles) {
+  if (!trade) return null;
+  const key = trade.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z]/g, '');
+  for (const [k, v] of Object.entries(TRADE_QUERIES)) {
+    const kn = k.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (key.includes(kn) || kn.includes(key)) return v;
+  }
+  return null;
+}
+
 async function generateImages(websiteId, trade) {
   const PEXELS_KEY = process.env.PEXELS_API_KEY;
   if (!PEXELS_KEY) return console.error('[PEXELS] PEXELS_API_KEY manquante');
@@ -49,10 +117,12 @@ async function generateImages(websiteId, trade) {
     const GROQ_KEY = process.env.GROQ_API_KEY;
     const svcRows = await queryAll('SELECT id, title FROM services_offered WHERE website_id=$1 ORDER BY display_order ASC LIMIT 6', [websiteId]);
 
-    let heroQueryEn = (trade || 'professional worker') + ' company at work';
-    let svcQueriesEn = svcRows.map(s => s.title + ' professional service');
+    // Chercher dans le dictionnaire d'abord
+    const tradeDict = getTradeQueries(trade, null);
+    let heroQueryEn = tradeDict ? tradeDict.hero : (trade || 'professional worker') + ' company at work';
+    let svcQueriesEn = tradeDict ? tradeDict.services : svcRows.map(s => s.title + ' professional service');
 
-    if (GROQ_KEY) {
+    if (GROQ_KEY && !tradeDict) {
       try {
         const svcTitles = svcRows.map(s => s.title).join(', ');
         const translatePrompt = 'You are a professional stock photo expert for Pexels. ' +
@@ -112,6 +182,74 @@ async function generateImages(websiteId, trade) {
   }
 }
 
+
+
+// ── Dictionnaire de requêtes Pexels par métier ──────────────────
+const TRADE_QUERIES = {
+  // Plomberie
+  'plombier':              { hero: 'professional plumber fixing pipes bathroom uniform', services: ['plumber fixing leaky faucet sink', 'plumber unclogging drain bathroom', 'plumber installing water heater', 'plumber repairing pipe under sink', 'plumber pressure testing pipes', 'plumber soldering copper pipes'] },
+  'plomberie':             { hero: 'professional plumber fixing pipes bathroom uniform', services: ['plumber fixing leaky faucet sink', 'plumber unclogging drain bathroom', 'plumber installing water heater', 'plumber repairing pipe under sink', 'plumber pressure testing pipes', 'plumber soldering copper pipes'] },
+  // Electricité
+  'electricien':           { hero: 'licensed electrician installing outlet residential workwear', services: ['electrician wiring circuit breaker panel', 'electrician installing light fixture ceiling', 'electrician fixing electrical outlet wall', 'electrician checking electrical panel residential', 'electrician installing smart home system', 'electrician outdoor lighting installation'] },
+  'electricite':           { hero: 'licensed electrician installing outlet residential workwear', services: ['electrician wiring circuit breaker panel', 'electrician installing light fixture ceiling', 'electrician fixing electrical outlet wall', 'electrician checking electrical panel residential', 'electrician installing smart home system', 'electrician outdoor lighting installation'] },
+  // Peinture
+  'peintre':               { hero: 'professional painter rolling white wall interior clean', services: ['painter applying paint roller interior wall', 'painter ceiling painting white room', 'painter exterior house painting ladder', 'painter decorative finish wall texture', 'painter preparing wall sanding primer', 'painter taping trim professional finish'] },
+  'peinture':              { hero: 'professional painter rolling white wall interior clean', services: ['painter applying paint roller interior wall', 'painter ceiling painting white room', 'painter exterior house painting ladder', 'painter decorative finish wall texture', 'painter preparing wall sanding primer', 'painter taping trim professional finish'] },
+  // Maconnerie
+  'macon':                 { hero: 'professional mason laying bricks residential construction', services: ['mason laying bricks wall construction', 'mason concrete foundation pouring', 'mason stone wall renovation', 'mason tiling floor bathroom', 'mason plastering wall smooth', 'mason building steps outdoor'] },
+  'maconnerie':            { hero: 'professional mason laying bricks residential construction', services: ['mason laying bricks wall construction', 'mason concrete foundation pouring', 'mason stone wall renovation', 'mason tiling floor bathroom', 'mason plastering wall smooth', 'mason building steps outdoor'] },
+  // Couverture
+  'couvreur':              { hero: 'professional roofer installing shingles residential roof', services: ['roofer laying roof tiles sunny day', 'roofer waterproofing flat roof', 'roofer repairing damaged shingles', 'roofer installing zinc flashing', 'roofer replacing gutters house', 'roofer insulation roof installation'] },
+  'toiture':               { hero: 'professional roofer installing shingles residential roof', services: ['roofer laying roof tiles sunny day', 'roofer waterproofing flat roof', 'roofer repairing damaged shingles', 'roofer installing zinc flashing', 'roofer replacing gutters house', 'roofer insulation roof installation'] },
+  // Menuiserie
+  'menuisier':             { hero: 'professional carpenter woodworking workshop tools', services: ['carpenter installing wooden door frame', 'carpenter building custom kitchen cabinet', 'carpenter installing hardwood floor', 'carpenter making wooden staircase', 'carpenter window frame installation', 'carpenter deck building outdoor wood'] },
+  'menuiserie':            { hero: 'professional carpenter woodworking workshop tools', services: ['carpenter installing wooden door frame', 'carpenter building custom kitchen cabinet', 'carpenter installing hardwood floor', 'carpenter making wooden staircase', 'carpenter window frame installation', 'carpenter deck building outdoor wood'] },
+  // Carrelage
+  'carreleur':             { hero: 'professional tiler laying ceramic tiles bathroom', services: ['tiler laying floor tiles bathroom', 'tiler grouting wall tiles kitchen', 'tiler cutting ceramic tile saw', 'tiler applying adhesive floor', 'tiler finishing bathroom shower', 'tiler outdoor terrace tiling'] },
+  'carrelage':             { hero: 'professional tiler laying ceramic tiles bathroom', services: ['tiler laying floor tiles bathroom', 'tiler grouting wall tiles kitchen', 'tiler cutting ceramic tile saw', 'tiler applying adhesive floor', 'tiler finishing bathroom shower', 'tiler outdoor terrace tiling'] },
+  // Chauffage
+  'chauffagiste':          { hero: 'professional heating technician installing boiler residential', services: ['technician installing gas boiler home', 'heating engineer radiator installation', 'technician heat pump installation outdoor', 'plumber underfloor heating pipes', 'technician servicing boiler annual', 'heating engineer thermostat installation'] },
+  'chauffage':             { hero: 'professional heating technician installing boiler residential', services: ['technician installing gas boiler home', 'heating engineer radiator installation', 'technician heat pump installation outdoor', 'plumber underfloor heating pipes', 'technician servicing boiler annual', 'heating engineer thermostat installation'] },
+  // Climatisation
+  'climaticien':           { hero: 'professional technician installing air conditioning unit', services: ['technician mounting air conditioner wall unit', 'hvac technician outdoor unit installation', 'technician air conditioning maintenance service', 'hvac cleaning filter air conditioner', 'technician installing split system indoor', 'hvac refrigerant recharge service'] },
+  'climatisation':         { hero: 'professional technician installing air conditioning unit', services: ['technician mounting air conditioner wall unit', 'hvac technician outdoor unit installation', 'technician air conditioning maintenance service', 'hvac cleaning filter air conditioner', 'technician installing split system indoor', 'hvac refrigerant recharge service'] },
+  // Jardinage
+  'jardinier':             { hero: 'professional gardener trimming hedge garden tools', services: ['gardener mowing lawn green grass', 'gardener pruning tree branches garden', 'gardener planting flowers bed spring', 'gardener laying turf grass lawn', 'gardener leaf blower autumn cleanup', 'landscape gardener designing outdoor space'] },
+  'jardinage':             { hero: 'professional gardener trimming hedge garden tools', services: ['gardener mowing lawn green grass', 'gardener pruning tree branches garden', 'gardener planting flowers bed spring', 'gardener laying turf grass lawn', 'gardener leaf blower autumn cleanup', 'landscape gardener designing outdoor space'] },
+  // Nettoyage
+  'nettoyage':             { hero: 'professional cleaner cleaning office building uniform', services: ['cleaner vacuuming carpet office', 'cleaner mopping floor commercial', 'window cleaner squeegee building exterior', 'cleaner disinfecting surface spray', 'pressure washing driveway pavement', 'cleaner sanitizing bathroom professional'] },
+  // Demenagement
+  'demenageur':            { hero: 'professional movers carrying furniture moving truck', services: ['movers lifting sofa apartment stairs', 'moving boxes stacking truck professional', 'movers wrapping furniture protection blanket', 'moving company unloading truck house', 'movers carrying boxes new home', 'professional moving team furniture assembly'] },
+  // Coiffure
+  'coiffeur':              { hero: 'professional hairdresser cutting hair salon', services: ['hairdresser coloring hair client salon', 'barber cutting mens hair clippers', 'hairdresser blow drying hair styling', 'hairdresser highlighting hair foils salon', 'hairdresser washing hair basin', 'hairdresser styling updo wedding hair'] },
+  'coiffure':              { hero: 'professional hairdresser cutting hair salon', services: ['hairdresser coloring hair client salon', 'barber cutting mens hair clippers', 'hairdresser blow drying hair styling', 'hairdresser highlighting hair foils salon', 'hairdresser washing hair basin', 'hairdresser styling updo wedding hair'] },
+  // Esthetique
+  'estheticien':           { hero: 'professional esthetician facial treatment beauty salon', services: ['esthetician applying facial mask client', 'beautician eyebrow shaping threading', 'esthetician body massage relaxation', 'beauty technician nail manicure salon', 'esthetician laser hair removal treatment', 'spa facial cleansing professional skincare'] },
+  'esthetique':            { hero: 'professional esthetician facial treatment beauty salon', services: ['esthetician applying facial mask client', 'beautician eyebrow shaping threading', 'esthetician body massage relaxation', 'beauty technician nail manicure salon', 'esthetician laser hair removal treatment', 'spa facial cleansing professional skincare'] },
+  // Massage
+  'masseur':               { hero: 'professional massage therapist relaxation spa', services: ['massage therapist back massage table', 'therapist deep tissue massage shoulder', 'relaxation massage aromatherapy candles', 'sports massage therapist leg muscles', 'therapist hot stone massage back', 'facial massage beauty treatment salon'] },
+  'massage':               { hero: 'professional massage therapist relaxation spa', services: ['massage therapist back massage table', 'therapist deep tissue massage shoulder', 'relaxation massage aromatherapy candles', 'sports massage therapist leg muscles', 'therapist hot stone massage back', 'facial massage beauty treatment salon'] },
+  // Coach
+  'coach':                 { hero: 'professional life coach consultation meeting office', services: ['coach client meeting consultation table', 'personal trainer coaching gym workout', 'business coach whiteboard strategy session', 'wellness coach meditation mindfulness', 'coach motivational speaking group', 'nutrition coach healthy food planning'] },
+  // Nutrition
+  'nutritionniste':        { hero: 'professional nutritionist consultation healthy food office', services: ['nutritionist meal planning vegetables table', 'dietitian consultation client healthy eating', 'nutritionist food diary review session', 'healthy meal prep containers nutrition', 'nutritionist weighing food portions', 'dietitian body composition analysis'] },
+  // Psychologie
+  'psychologue':           { hero: 'professional psychologist therapy session office calm', services: ['therapist client consultation comfortable office', 'psychologist notes therapy session', 'mental health consultation professional office', 'therapy session couch psychologist room', 'counselor listening client session', 'psychologist relaxation breathing exercise'] },
+  // Osteopathie
+  'osteopathe':            { hero: 'professional osteopath treatment table consultation', services: ['osteopath spinal manipulation treatment', 'osteopath shoulder joint mobilization', 'osteopath cranial therapy gentle hands', 'physical therapist back treatment table', 'osteopath neck adjustment professional', 'osteopath posture assessment consultation'] },
+};
+
+function getTradeQueries(trade, svcTitles) {
+  if (!trade) return null;
+  const key = trade.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z]/g, '');
+  for (const [k, v] of Object.entries(TRADE_QUERIES)) {
+    const kn = k.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (key.includes(kn) || kn.includes(key)) return v;
+  }
+  return null;
+}
 
 async function generateImagesDALLE(websiteId, trade, services) {
   const OPENAI_KEY = process.env.OPENAI_API_KEY;
