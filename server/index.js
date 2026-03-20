@@ -5,8 +5,8 @@ const rateLimit = require('express-rate-limit');
 const crypto = require('crypto');
 
 async function generateImages(websiteId, trade) {
-  const UNSPLASH_KEY = process.env.UNSPLASH_API_KEY;
-  if (!UNSPLASH_KEY) return console.error('[UNSPLASH] UNSPLASH_API_KEY manquante');
+  const PEXELS_KEY = process.env.PEXELS_API_KEY;
+  if (!PEXELS_KEY) return console.error('[PEXELS] PEXELS_API_KEY manquante');
   const fs = require('fs');
   const path = require('path');
   const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
@@ -15,32 +15,32 @@ async function generateImages(websiteId, trade) {
   async function searchAndDownload(query, filename) {
     try {
       const searchResp = await fetch(
-        'https://api.unsplash.com/search/photos?query=' + encodeURIComponent(query) + '&per_page=5&orientation=landscape',
-        { headers: { 'Authorization': 'Client-ID ' + UNSPLASH_KEY } }
+        'https://api.pexels.com/v1/search?query=' + encodeURIComponent(query) + '&per_page=10&orientation=landscape',
+        { headers: { 'Authorization': PEXELS_KEY } }
       );
       const searchData = await searchResp.json();
-      if (!searchData.results || !searchData.results.length) {
-        console.error('[UNSPLASH] Aucun résultat pour:', query);
+      if (!searchData.photos || !searchData.photos.length) {
+        console.error('[PEXELS] Aucun résultat pour:', query);
         return null;
       }
-      const idx = Math.floor(Math.random() * Math.min(5, searchData.results.length));
-      const photo = searchData.results[idx];
-      const imageUrl = photo.urls.regular;
+      const idx = Math.floor(Math.random() * Math.min(10, searchData.photos.length));
+      const photo = searchData.photos[idx];
+      const imageUrl = photo.src.large2x || photo.src.large;
       const imgResp = await fetch(imageUrl);
       if (!imgResp.ok) throw new Error('Download failed: ' + imgResp.status);
       const buffer = Buffer.from(await imgResp.arrayBuffer());
       const filepath = path.join(uploadDir, filename);
       fs.writeFileSync(filepath, buffer);
-      console.log('[UNSPLASH] Image sauvegardée:', filename);
+      console.log('[PEXELS] Image sauvegardée:', filename);
       return {
         path: '/uploads/' + filename,
-        photoId: photo.id,
-        author: photo.user.name,
-        authorUrl: 'https://unsplash.com/@' + photo.user.username + '?utm_source=quickio&utm_medium=referral',
-        photoUrl: photo.links.html + '?utm_source=quickio&utm_medium=referral'
+        photoId: String(photo.id),
+        author: photo.photographer,
+        authorUrl: photo.photographer_url,
+        photoUrl: photo.url
       };
     } catch(e) {
-      console.error('[UNSPLASH] Erreur pour', query, ':', e.message);
+      console.error('[PEXELS] Erreur pour', query, ':', e.message);
       return null;
     }
   }
@@ -57,12 +57,12 @@ async function generateImages(websiteId, trade) {
         const svcTitles = svcRows.map(s => s.title).join(', ');
         const translatePrompt = 'Tu es un expert en recherche d\'images stock. ' +
           'Transforme le métier en entreprise (ex: couvreur -> entreprise de couverture, plombier -> entreprise de plomberie). ' +
-          'Puis traduis en anglais et génère des requêtes Unsplash très précises et visuelles (3-5 mots max) pour:\n' +
+          'Puis traduis en anglais et génère des requêtes Pexels très précises et visuelles (4-6 mots) pour:\n' +
           '1. Hero image pour une ' + (trade || 'entreprise professionnelle') + '\n' +
           '2. Ces services: ' + svcTitles + '\n' +
           'Réponds UNIQUEMENT en JSON sans backticks: {"hero": "query anglais", "services": ["query1", "query2", ...]}\n' +
           'IMPORTANT: Les requêtes doivent cibler des photos réalistes du métier. Pour le hero, image générique representant parfaitement le métier (outil, chantier, matériel). Pour les services, même chose. Si des personnes apparaissent, ajoute "european worker" à la requête.\n' +
-          'Exemples: plombier -> "plumbing pipes tools european worker", couvreur -> "roofing tiles company work", installation chaudière -> "boiler heating installation european technician"';
+          'Exemples: plombier -> "plumbing pipes tools european worker", couvreur -> "roofing tiles company work", installation chaudière -> "boiler heating installation european technician". Favorise des images d action realistes montrant le metier en situation, evite les portraits';
         const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
@@ -73,9 +73,9 @@ async function generateImages(websiteId, trade) {
           const parsed = JSON.parse(groqData.choices[0].message.content.replace(/```json|```/g, '').trim());
           if (parsed.hero) heroQueryEn = parsed.hero;
           if (parsed.services && parsed.services.length) svcQueriesEn = parsed.services;
-          console.log('[UNSPLASH] Requêtes:', heroQueryEn, svcQueriesEn);
+          console.log('[PEXELS] Requêtes:', heroQueryEn, svcQueriesEn);
         }
-      } catch(e) { console.error('[UNSPLASH] Groq error:', e.message); }
+      } catch(e) { console.error('[PEXELS] Groq error:', e.message); }
     }
 
     // Supprimer anciens crédits
@@ -87,7 +87,7 @@ async function generateImages(websiteId, trade) {
       await queryOne('UPDATE websites SET hero_image_url=$1 WHERE id=$2', [heroResult.path, websiteId]);
       await queryOne('INSERT INTO image_credits (website_id, image_type, unsplash_photo_id, unsplash_author, unsplash_author_url, unsplash_photo_url) VALUES ($1,$2,$3,$4,$5,$6)',
         [websiteId, 'hero', heroResult.photoId, heroResult.author, heroResult.authorUrl, heroResult.photoUrl]);
-      console.log('[UNSPLASH] Hero généré:', heroResult.path);
+      console.log('[PEXELS] Hero généré:', heroResult.path);
     }
 
     // Images services
@@ -99,12 +99,12 @@ async function generateImages(websiteId, trade) {
         await queryOne('UPDATE services_offered SET image_path=$1 WHERE id=$2', [svcResult.path, svc.id]);
         await queryOne('INSERT INTO image_credits (website_id, image_type, entity_id, unsplash_photo_id, unsplash_author, unsplash_author_url, unsplash_photo_url) VALUES ($1,$2,$3,$4,$5,$6,$7)',
           [websiteId, 'service', svc.id, svcResult.photoId, svcResult.author, svcResult.authorUrl, svcResult.photoUrl]);
-        console.log('[UNSPLASH] Service généré:', svc.title, '->', svcQuery);
+        console.log('[PEXELS] Service généré:', svc.title, '->', svcQuery);
       }
     }
-    console.log('[UNSPLASH] Toutes les images générées pour', websiteId);
+    console.log('[PEXELS] Toutes les images générées pour', websiteId);
   } catch(e) {
-    console.error('[UNSPLASH] Erreur globale:', e.message);
+    console.error('[PEXELS] Erreur globale:', e.message);
   }
 }
 
